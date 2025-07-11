@@ -4,9 +4,9 @@ window.onload=function(){
 
     logo.addEventListener('click', () => {
         if (isFirstLogo) {
-            logo.src = "/images/sxtp_logo_2.png";
+            logo.src = "images/sxtp_logo_2.png";
         } else {
-            logo.src = "/images/sxtp_logo_1.png";
+            logo.src = "images/sxtp_logo_1.png";
         }
         isFirstLogo = !isFirstLogo;
 });
