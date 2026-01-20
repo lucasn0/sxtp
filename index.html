@@ -2,27 +2,97 @@
 <html lang="es">
 
 <head>
-    <title>
-        Sextape
-    </title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>★ sxtp ★ official site</title>
     <link rel="icon" href="images/favicon.ico">
     <link rel="stylesheet" href="css/index.css">
-    <script src="scripts/script.js"></script>
 </head>
 
 <body>
-    <div class="navbar">
-        <img id="logo" src="images/sxtp_logo_1.png">
-        <ul>
-            <li><a>DISCOS</a></li>
-            <li><a>GALERÍA</a></li>
-        </ul>
-    </div>
-</body>
-<div class="news-footer">
-    <div class="ticker">
-        Gordo puto reventado
-    </div>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-item" id="logo-container">
+            <img id="logo" src="images/sxtp_logo_1.png" alt="sxtp logo">
+        </div>
+        <div class="nav-item nav-link" data-section="menu">menu</div>
+        <div class="nav-item nav-link" data-section="vision">vision</div>
+        <div class="nav-item nav-link" data-section="audio">audio</div>
+        <div class="nav-item nav-link play-btn" data-section="play">play</div>
+        <div class="nav-item timestamp">
+            <span id="live-time"></span>
+        </div>
+    </nav>
 
-</div>
-<html>
+    <!-- Main Content Grid -->
+    <main class="content-grid">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="video-container">
+                <img src="images/sxtp-imgs/3.jpg" alt="band" class="sidebar-img">
+                <div class="video-overlay">▶</div>
+            </div>
+            <div class="sidebar-controls">
+                <div class="control-icon">🎵 streaming.txt</div>
+                <div class="control-icon">📁 .gif</div>
+                <div class="control-icon">🖼️ image.je</div>
+                <div class="control-icon">🎸 spotify</div>
+                <div class="control-icon">📺 tube.ru</div>
+            </div>
+            <div class="album-mini">
+                <div class="album-art"></div>
+                <div class="track-info">♪ 09 ⏸ 00:00:00</div>
+            </div>
+        </aside>
+
+        <!-- Main Hero Section -->
+        <section class="hero-section">
+            <div class="color-block pink-block"></div>
+            <div class="color-block purple-block"></div>
+            <div class="hero-banner">
+                <div class="hero-title">$xtp</div>
+                <div class="hero-subtitle">
+                    demos 1. pague lo que quiera (+3 canciones mp3)
+                </div>
+                <div class="hero-text">
+                    cada descarga ira al disco
+                    <span class="blink">click</span>
+                </div>
+            </div>
+            <div class="color-block cyan-block"></div>
+            <div class="button-stack">
+                <button class="retro-btn orange-btn">DESCARGAR</button>
+                <button class="retro-btn pink-btn">ESCUCHAR</button>
+                <button class="retro-btn cyan-btn">COMPARTIR</button>
+            </div>
+            <div class="color-block magenta-block"></div>
+            <div class="promo-box">
+                <p>*** NUEVO ÁLBUM ***</p>
+                <p>Disponible ahora</p>
+            </div>
+        </section>
+
+        <!-- Side Panel -->
+        <aside class="side-panel">
+            <div class="panel-content">
+                <h3>PRÓXIMOS SHOWS</h3>
+                <div class="show-list">
+                    <div class="show-item">15.02 - Madrid</div>
+                    <div class="show-item">22.02 - Barcelona</div>
+                    <div class="show-item">01.03 - Valencia</div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- News Ticker Footer -->
+    <footer class="news-footer">
+        <div class="ticker">
+            ★★★ NUEVO SENCILLO DISPONIBLE ★★★ GIRA 2026 CONFIRMADA ★★★ SÍGUENOS EN REDES ★★★ MERCHANDISING OFICIAL ★★★
+        </div>
+    </footer>
+
+    <script src="scripts/script.js"></script>
+</body>
+
+</html>
