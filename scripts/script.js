@@ -41,6 +41,55 @@ window.onload = function() {
     updateTime();
     setInterval(updateTime, 1000);
 
+    // Audio player functionality
+    const audioPlayer = document.getElementById('audio-player');
+    const playButton = document.querySelector('.play-btn');
+    const volumeSlider = document.getElementById('volume-slider');
+    const volumeDisplay = document.getElementById('volume-display');
+    const volumeControl = document.querySelector('.volume-control');
+    
+    if (audioPlayer && playButton) {
+        // Set volume to 60%
+        audioPlayer.volume = 0.6;
+        
+        // Volume slider control
+        if (volumeSlider && volumeDisplay) {
+            volumeSlider.addEventListener('input', function() {
+                const volume = this.value / 100;
+                audioPlayer.volume = volume;
+                volumeDisplay.textContent = this.value + '%';
+            });
+        }
+        
+        playButton.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent default nav-link behavior
+            
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+                playButton.textContent = 'pause';
+                // Show volume control when playing (only on desktop via CSS)
+                if (volumeControl) {
+                    volumeControl.classList.add('visible');
+                }
+            } else {
+                audioPlayer.pause();
+                playButton.textContent = 'play';
+                // Hide volume control when paused
+                if (volumeControl) {
+                    volumeControl.classList.remove('visible');
+                }
+            }
+        });
+        
+        // Reset button text and hide volume control when audio ends
+        audioPlayer.addEventListener('ended', function() {
+            playButton.textContent = 'play';
+            if (volumeControl) {
+                volumeControl.classList.remove('visible');
+            }
+        });
+    }
+
     // Navigation links with simple alerts (replace with actual navigation later)
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
