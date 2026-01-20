@@ -55,14 +55,6 @@ window.onload = function() {
         });
     });
 
-    // Video overlay interaction
-    const videoOverlay = document.querySelector('.video-overlay');
-    if (videoOverlay) {
-        videoOverlay.addEventListener('click', function() {
-            alert('🎵 ¡Próximamente! Video player en desarrollo...');
-        });
-    }
-
     // Control icons interaction
     const controlIcons = document.querySelectorAll('.control-icon');
     controlIcons.forEach(icon => {
