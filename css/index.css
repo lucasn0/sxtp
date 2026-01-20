@@ -262,6 +262,7 @@ body {
     font-weight: bold;
     color: #0000ff;
     text-shadow: 3px 3px 0 #000;
+    text-decoration: underline;
     font-style: italic;
     margin-bottom: 10px;
 }
@@ -282,6 +283,7 @@ body {
 .blink {
     animation: blink 1s infinite;
     font-weight: bold;
+    text-decoration: underline;
 }
 
 @keyframes blink {
