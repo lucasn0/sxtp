@@ -52,11 +52,16 @@ body {
 }
 
 #logo {
-    height: 35px;
-    width: auto;
+    height: auto;
+    font-size: 28px;
+    font-weight: bold;
+    font-style: italic;
+    text-decoration: underline;
     display: block;
     cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 16 24"><path fill="white" stroke="black" stroke-width="1" d="M1,1 L1,16 L5,12 L7,19 L9,18 L7,11 L12,11 Z"/></svg>'), pointer;
     transition: transform 0.1s;
+    text-shadow: 2px 2px 0 #000;
+    animation: colorCycle 5s infinite;
 }
 
 #logo:active {
@@ -292,6 +297,16 @@ body {
     25%, 75% { opacity: 0; }
 }
 
+@keyframes colorCycle {
+    0% { color: #fff; }
+    16.66% { color: #ff00ff; }
+    33.33% { color: #00ffff; }
+    50% { color: #ffff00; }
+    66.66% { color: #ff0000; }
+    83.33% { color: #00ff00; }
+    100% { color: #fff; }
+}
+
 .button-stack {
     display: flex;
     flex-direction: column;
@@ -416,7 +431,7 @@ body {
     }
     
     #logo {
-        height: 45px;
+        font-size: 32px;
     }
     
     .content-grid {
@@ -489,7 +504,7 @@ body {
     }
     
     #logo {
-        height: 50px;
+        font-size: 36px;
     }
     
     .content-grid {

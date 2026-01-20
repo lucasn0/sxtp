@@ -1,16 +1,22 @@
 window.onload = function() {
-    // Logo toggle functionality
+    // Logo shuffle functionality
     const logo = document.getElementById('logo');
-    let isFirstLogo = true;
 
     if (logo) {
         logo.addEventListener('click', () => {
-            if (isFirstLogo) {
-                logo.src = "images/sxtp_logo_2.png";
-            } else {
-                logo.src = "images/sxtp_logo_1.png";
+            // Get current text
+            const currentText = logo.textContent;
+            // Convert to array and shuffle
+            const chars = currentText.split('');
+            
+            // Fisher-Yates shuffle algorithm
+            for (let i = chars.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [chars[i], chars[j]] = [chars[j], chars[i]];
             }
-            isFirstLogo = !isFirstLogo;
+            
+            // Set shuffled text
+            logo.textContent = chars.join('');
         });
     }
 
