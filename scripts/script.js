@@ -41,6 +41,35 @@ window.onload = function() {
     updateTime();
     setInterval(updateTime, 1000);
 
+    // Share button functionality
+    const shareButton = document.querySelector('.cyan-btn');
+    if (shareButton) {
+        shareButton.addEventListener('click', async () => {
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: '$xtp - Official Site',
+                        text: 'Check out $xtp rock band!',
+                        url: window.location.href
+                    });
+                } catch (err) {
+                    // User cancelled or error occurred
+                    if (err.name !== 'AbortError') {
+                        console.log('Error sharing:', err);
+                    }
+                }
+            } else {
+                // Fallback: copy link to clipboard
+                try {
+                    await navigator.clipboard.writeText(window.location.href);
+                    alert('Link copied to clipboard!');
+                } catch (err) {
+                    alert('Sharing not supported on this browser');
+                }
+            }
+        });
+    }
+
     // Audio player functionality
     const audioPlayer = document.getElementById('audio-player');
     const playButton = document.querySelector('.play-btn');
@@ -73,7 +102,7 @@ window.onload = function() {
                 }
             } else {
                 audioPlayer.pause();
-                playButton.textContent = 'play';
+                playButton.textContent = 'play!';
                 // Hide volume control when paused
                 if (volumeControl) {
                     volumeControl.classList.remove('visible');
@@ -83,7 +112,7 @@ window.onload = function() {
         
         // Reset button text and hide volume control when audio ends
         audioPlayer.addEventListener('ended', function() {
-            playButton.textContent = 'play';
+            playButton.textContent = 'play!';
             if (volumeControl) {
                 volumeControl.classList.remove('visible');
             }
