@@ -348,6 +348,7 @@ body {
     background: #ff00ff;
     border: 3px solid #000;
     padding: 15px;
+    display: none; /* Hidden on mobile */
 }
 
 .panel-content h3 {
@@ -449,7 +450,6 @@ body {
         grid-column: 1;
         grid-row: 2;
     }
-    }
     
     .cyan-block {
         grid-column: 2;
@@ -474,6 +474,7 @@ body {
     .side-panel {
         grid-column: 2;
         grid-row: 2;
+        display: block; /* Show on tablet+ */
     }
 }
 
@@ -561,7 +562,6 @@ body {
         grid-column: 2 / 4;
         grid-row: 3;
     }
-    }
     
     .retro-btn {
         padding: 18px;
@@ -571,6 +571,7 @@ body {
     .side-panel {
         grid-column: 3;
         grid-row: 1;
+        display: block; /* Show on desktop */
     }
     
     .news-footer {
