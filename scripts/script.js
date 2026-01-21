@@ -70,6 +70,137 @@ window.onload = function() {
         });
     }
 
+    // ESCUCHAR button - Create pop-up windows
+    const escucharButton = document.querySelector('.pink-btn');
+    if (escucharButton) {
+        escucharButton.addEventListener('click', () => {
+            createPopups();
+        });
+    }
+
+    function createPopups() {
+        const popupData = [
+            { 
+                title: 'Ruidos de la Humanidad', 
+                color: '#ff00ff',
+                spotifyLink: 'https://open.spotify.com/album/76TGAKQaOBouIo1JsD1yzI?si=To0boAUzQu-MAMf7IIO_FA',
+                appleMusicLink: 'https://music.apple.com/album/YOUR_ALBUM_ID_1'
+            },
+            { 
+                title: 'Alter Ego', 
+                color: '#00ffff',
+                spotifyLink: 'https://open.spotify.com/album/0XAaFU3DbefXcGVPma9s6B?si=i_lDAq6VS4mXOcZzJBCpfg',
+                appleMusicLink: 'https://music.apple.com/es/album/alter-ego/1795668610'
+            },
+            { 
+                title: 'Casa Tomada', 
+                color: '#ff1493',
+                spotifyLink: 'https://open.spotify.com/album/37pGzPZjupVqyyOCDVgy3L?si=NcCQ9pYHTkSHBRYGeKnOfg',
+                appleMusicLink: 'https://music.apple.com/es/album/casa-tomada-ep/1704255838'
+            },
+            { 
+                title: 'Fuego Amigo', 
+                color: '#ffff00',
+                spotifyLink: 'https://open.spotify.com/album/6Oibkx9hcil55damCZohBz?si=NMNFlVNuSyC_qHReYWA1dg',
+                appleMusicLink: 'https://music.apple.com/es/album/fuego-amigo/1755710029'
+            }
+        ];
+
+        const images = [
+            'images/sxtp-imgs/ruidos-de-la-humanidad.jpg',
+            'images/sxtp-imgs/alter-ego.jpg',
+            'images/sxtp-imgs/casa-tomada.jpg',
+            'images/sxtp-imgs/9.jpg'
+        ];
+
+        popupData.forEach((data, index) => {
+            setTimeout(() => {
+                createPopup(data, images[index], index);
+            }, index * 150); // Stagger creation
+        });
+    }
+
+    function createPopup(data, imageSrc, index) {
+        const popup = document.createElement('div');
+        popup.className = 'popup-window';
+        
+        // Calculate position with overlap
+        const baseX = 100 + (index * 30);
+        const baseY = 100 + (index * 30);
+        popup.style.left = baseX + 'px';
+        popup.style.top = baseY + 'px';
+
+        popup.innerHTML = `
+            <div class="popup-titlebar">
+                <div class="popup-title">${data.title}</div>
+                <div class="popup-close">X</div>
+            </div>
+            <div class="popup-content">
+                <img src="${imageSrc}" alt="popup image">
+                <div class="popup-buttons">
+                    <a href="${data.spotifyLink}" target="_blank" class="popup-btn" style="background: ${data.color}">spotify</a>
+                    <a href="${data.appleMusicLink}" target="_blank" class="popup-btn" style="background: ${data.color}">music</a>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(popup);
+
+        // Make draggable
+        const titlebar = popup.querySelector('.popup-titlebar');
+        let isDragging = false;
+        let currentX = baseX;
+        let currentY = baseY;
+        let initialX, initialY;
+        let xOffset = baseX;
+        let yOffset = baseY;
+
+        titlebar.addEventListener('mousedown', dragStart);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', dragEnd);
+
+        function dragStart(e) {
+            initialX = e.clientX - xOffset;
+            initialY = e.clientY - yOffset;
+
+            if (e.target === titlebar || e.target.classList.contains('popup-title')) {
+                isDragging = true;
+            }
+        }
+
+        function drag(e) {
+            if (isDragging) {
+                e.preventDefault();
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+                xOffset = currentX;
+                yOffset = currentY;
+
+                popup.style.left = currentX + 'px';
+                popup.style.top = currentY + 'px';
+            }
+        }
+
+        function dragEnd(e) {
+            initialX = currentX;
+            initialY = currentY;
+            isDragging = false;
+        }
+
+        // Close button
+        const closeBtn = popup.querySelector('.popup-close');
+        closeBtn.addEventListener('click', () => {
+            popup.remove();
+        });
+
+        // Bring to front on click
+        popup.addEventListener('mousedown', () => {
+            const allPopups = document.querySelectorAll('.popup-window');
+            allPopups.forEach(p => p.style.zIndex = '10000');
+            popup.style.zIndex = '10001';
+        });
+    }
+
     // Audio player functionality
     const audioPlayer = document.getElementById('audio-player');
     const playButton = document.querySelector('.play-btn');
