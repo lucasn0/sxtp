@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
+    <title>★ sxtp ★ audio</title>
+    <link rel="stylesheet" href="../css/index.css">
+    <link rel="stylesheet" href="../css/audio.css">
+    <link rel="icon" href="../images/favicon.ico">
+</head>
+
+<body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-item" id="logo-container">
+            <a href="../index.html"><div id="logo">$xtp</div></a>
+        </div>
+        <div class="nav-item nav-link" data-section="vision"><a href="gallery.html">gallery</a></div>
+        <div class="nav-item nav-link" data-section="audio">audio</div>
+        <div class="nav-item nav-link play-btn" data-section="play">play!</div>
+        <div class="nav-item volume-control">
+            <span class="volume-label">vol:</span>
+            <input type="range" id="volume-slider" min="0" max="100" value="60" class="retro-slider">
+            <span id="volume-display" class="volume-value">100%</span>
+        </div>
+        <div class="nav-item timestamp">
+            <span id="live-time"></span>
+        </div>
+    </nav>
+
+    <!-- Audio Content -->
+    <main class="audio-container">
+        <h1 class="audio-title">AUDIO GEAR</h1>
+        
+        <div class="gear-grid">
+            <!-- Metal -->
+            <div class="gear-card">
+                <h2 class="member-name">METAL</h2>
+                <div class="gear-list">
+                    <div class="gear-item">
+                        <span class="gear-label">Amplifier:</span>
+                        <span class="gear-value">Orange Micro Terror</span>
+                    </div>
+                    <div class="gear-item">
+                        <span class="gear-label">Guitar:</span>
+                        <span class="gear-value">Fender Stratocaster</span>
+                    </div>
+                    <div class="gear-item">
+                        <span class="gear-label">Effects:</span>
+                        <span class="gear-value">Boss DS-1, MXR Phase 90</span>
+                    </div>
+                    <div class="gear-item">
+                        <span class="gear-label">Pedals:</span>
+                        <span class="gear-value">Electro-Harmonix Big Muff</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Masi -->
+            <div class="gear-card">
+                <h2 class="member-name">MASI</h2>
+                <div class="gear-list">
+                    <div class="gear-item">
+                        <span class="gear-label">Amplifier:</span>
+                        <span class="gear-value">Fender Rumble 100</span>
+                    </div>
+                    <div class="gear-item">
+                        <span class="gear-label">Bass:</span>
+                        <span class="gear-value">Hofner Violin Bass</span>
+                    </div>
+                    <div class="gear-item">
+                        <span class="gear-label">Effects:</span>
+                        <span class="gear-value">Darkglass Alpha Omega</span>
+                    </div>
+                    <div class="gear-item">
+                        <span class="gear-label">Strings:</span>
+                        <span class="gear-value">D'Addario Flatwounds</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Third -->
+            <div class="gear-card">
+                <h2 class="member-name">THIRD</h2>
+                <div class="gear-list">
+                    <div class="gear-item">
+                        <span class="gear-label">Drums:</span>
+                        <span class="gear-value">Tama Superstar Classic</span>
+                    </div>
+                    <div class="gear-item">
+                        <span class="gear-label">Cymbals:</span>
+                        <span class="gear-value">Zildjian A Custom</span>
+                    </div>
+                    <div class="gear-item">
+                        <span class="gear-label">Snare:</span>
+                        <span class="gear-value">Ludwig Black Beauty</span>
+                    </div>
+                    <div class="gear-item">
+                        <span class="gear-label">Sticks:</span>
+                        <span class="gear-value">Vic Firth 5A</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- News Ticker Footer -->
+    <footer class="news-footer">
+        <a class="ticker" href="https://www.passline.com/eventos/tarea-fina-en-tucuman">
+            ★★★ NUEVO EP DISPONIBLE ★★★ MDQ 30/01 ENTRADAS ACÁ ★★★ METAL VIOLADO ★★★ 
+        </a>
+    </footer>
+
+    <audio id="audio-player" src="../audio/sexo-debil.mp3" preload="auto"></audio>
+
+    <script src="../scripts/script.js"></script>
+</body>
+
+</html>
