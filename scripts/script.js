@@ -163,6 +163,9 @@ window.onload = function() {
     // ===== DRAGGABLE BLOCKS FUNCTIONALITY (Mouse-based for cross-browser compatibility) =====
     const draggableBlocks = document.querySelectorAll('.draggable-block');
     
+    // Check if device is mobile (screen width < 900px for desktop breakpoint)
+    const isMobile = () => window.innerWidth < 900;
+    
     draggableBlocks.forEach(block => {
         let isDragging = false;
         let startX, startY;
@@ -170,8 +173,10 @@ window.onload = function() {
         let currentX = 0, currentY = 0;
         let originalRect = null;
 
-        // Mouse events
+        // Mouse events - only on desktop
         block.addEventListener('mousedown', function(e) {
+            // Disable dragging on mobile
+            if (isMobile()) return;
             // Prevent default to avoid text selection
             e.preventDefault();
             
@@ -226,8 +231,10 @@ window.onload = function() {
             }, 600);
         });
 
-        // Touch events for mobile
+        // Touch events for mobile - disabled for dragging (click-to-expand still works)
         block.addEventListener('touchstart', function(e) {
+            // Disable dragging on mobile, but allow click-to-expand
+            return;
             const touch = e.touches[0];
             isDragging = true;
             startX = touch.clientX;
@@ -247,6 +254,8 @@ window.onload = function() {
         });
 
         document.addEventListener('touchmove', function(e) {
+            // Disabled for mobile
+            return;
             if (!isDragging) return;
             
             e.preventDefault();
@@ -262,6 +271,8 @@ window.onload = function() {
         }, { passive: false });
 
         document.addEventListener('touchend', function() {
+            // Disabled for mobile
+            return;
             if (!isDragging) return;
             
             isDragging = false;
