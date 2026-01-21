@@ -49,7 +49,7 @@ window.onload = function() {
                 try {
                     await navigator.share({
                         title: '$xtp - Official Site',
-                        text: 'Check out $xtp rock band!',
+                        text: 'poderoso dolor humano',
                         url: window.location.href
                     });
                 } catch (err) {
@@ -62,7 +62,7 @@ window.onload = function() {
                 // Fallback: copy link to clipboard
                 try {
                     await navigator.clipboard.writeText(window.location.href);
-                    alert('Link copied to clipboard!');
+                    alert('Link copiado al portapapeles');
                 } catch (err) {
                     alert('Sharing not supported on this browser');
                 }
