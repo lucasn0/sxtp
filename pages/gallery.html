@@ -74,6 +74,41 @@
     <audio id="audio-player" src="../audio/sexo-debil.mp3" preload="auto"></audio>
 
     <script src="../scripts/script.js"></script>
+    <script>
+        // Gallery image fullscreen functionality
+        const galleryItems = document.querySelectorAll('.gallery-item img');
+        
+        galleryItems.forEach(img => {
+            img.addEventListener('click', function(e) {
+                e.stopPropagation();
+                
+                // Create fullscreen overlay
+                const fullscreen = document.createElement('div');
+                fullscreen.className = 'gallery-fullscreen';
+                
+                const fullscreenImg = document.createElement('img');
+                fullscreenImg.src = this.src;
+                fullscreenImg.alt = this.alt;
+                
+                fullscreen.appendChild(fullscreenImg);
+                document.body.appendChild(fullscreen);
+                
+                // Close on click
+                fullscreen.addEventListener('click', function() {
+                    fullscreen.remove();
+                });
+                
+                // Close on ESC key
+                const escHandler = function(e) {
+                    if (e.key === 'Escape') {
+                        fullscreen.remove();
+                        document.removeEventListener('keydown', escHandler);
+                    }
+                };
+                document.addEventListener('keydown', escHandler);
+            });
+        });
+    </script>
 </body>
 
 </html>
