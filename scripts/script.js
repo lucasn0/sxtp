@@ -124,9 +124,13 @@ window.onload = function() {
         const popup = document.createElement('div');
         popup.className = 'popup-window';
         
+        // Check if mobile
+        const isMobile = window.innerWidth < 900;
+        
         // Calculate position with overlap
-        const baseX = 100 + (index * 30);
-        const baseY = 100 + (index * 30);
+        // On mobile: position at left side of screen, on desktop: center-left area
+        const baseX = isMobile ? 10 + (index * 20) : 100 + (index * 30);
+        const baseY = isMobile ? 50 + (index * 40) : 100 + (index * 30);
         popup.style.left = baseX + 'px';
         popup.style.top = baseY + 'px';
 
@@ -155,9 +159,15 @@ window.onload = function() {
         let xOffset = baseX;
         let yOffset = baseY;
 
+        // Mouse events for desktop
         titlebar.addEventListener('mousedown', dragStart);
         document.addEventListener('mousemove', drag);
         document.addEventListener('mouseup', dragEnd);
+
+        // Touch events for mobile
+        titlebar.addEventListener('touchstart', touchStart, { passive: false });
+        document.addEventListener('touchmove', touchDrag, { passive: false });
+        document.addEventListener('touchend', touchEnd);
 
         function dragStart(e) {
             initialX = e.clientX - xOffset;
@@ -182,6 +192,37 @@ window.onload = function() {
         }
 
         function dragEnd(e) {
+            initialX = currentX;
+            initialY = currentY;
+            isDragging = false;
+        }
+
+        // Touch event handlers
+        function touchStart(e) {
+            if (e.target === titlebar || e.target.classList.contains('popup-title')) {
+                const touch = e.touches[0];
+                initialX = touch.clientX - xOffset;
+                initialY = touch.clientY - yOffset;
+                isDragging = true;
+                e.preventDefault();
+            }
+        }
+
+        function touchDrag(e) {
+            if (isDragging) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                currentX = touch.clientX - initialX;
+                currentY = touch.clientY - initialY;
+                xOffset = currentX;
+                yOffset = currentY;
+
+                popup.style.left = currentX + 'px';
+                popup.style.top = currentY + 'px';
+            }
+        }
+
+        function touchEnd(e) {
             initialX = currentX;
             initialY = currentY;
             isDragging = false;
