@@ -170,7 +170,7 @@ body {
 
 /* ===== SIDEBAR ===== */
 .sidebar {
-    background: #000;
+    background: black;
     padding: 10px;
     border: 3px solid #0000ff;
     display: flex;
@@ -671,6 +671,7 @@ body {
     
     .news-footer {
         font-size: 16px;
+        color: cyan;
         padding: 10px 0;
     }
 }
