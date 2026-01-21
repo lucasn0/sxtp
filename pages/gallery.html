@@ -33,34 +33,8 @@
     <!-- Gallery Content -->
     <main class="gallery-container">
         <h1 class="gallery-title">GALLERY</h1>
-        <div class="gallery-grid">
-            <div class="gallery-item">
-                <img src="../images/gallery/1.jpg" alt="gallery image 1">
-            </div>
-            <div class="gallery-item">
-                <img src="../images/gallery/2.jpg" alt="gallery image 2">
-            </div>
-            <div class="gallery-item">
-                <img src="../images/gallery/3.jpg" alt="gallery image 3">
-            </div>
-            <div class="gallery-item">
-                <img src="../images/gallery/4.jpg" alt="gallery image 4">
-            </div>
-            <div class="gallery-item">
-                <img src="../images/gallery/5.jpg" alt="gallery image 5">
-            </div>
-            <div class="gallery-item">
-                <img src="../images/gallery/6.jpg" alt="gallery image 6">
-            </div>
-            <div class="gallery-item">
-                <img src="../images/gallery/7.jpg" alt="gallery image 7">
-            </div>
-            <div class="gallery-item">
-                <img src="../images/gallery/8.jpg" alt="gallery image 8">
-            </div>
-            <div class="gallery-item">
-                <img src="../images/gallery/10.jpg" alt="gallery image 10">
-            </div>
+        <div class="gallery-grid" id="gallery-grid">
+            <!-- Images will be loaded dynamically -->
         </div>
     </main>
 
@@ -75,39 +49,90 @@
 
     <script src="../scripts/script.js"></script>
     <script>
-        // Gallery image fullscreen functionality
-        const galleryItems = document.querySelectorAll('.gallery-item img');
+        // Dynamically load all images from gallery folder
+        const galleryGrid = document.getElementById('gallery-grid');
         
-        galleryItems.forEach(img => {
-            img.addEventListener('click', function(e) {
-                e.stopPropagation();
+        // Function to attempt loading images by number
+        async function loadGalleryImages() {
+            const loadedImages = [];
+            let imageNumber = 1;
+            let consecutiveFails = 0;
+            
+            // Try to load images from 1 to 100 (or until we hit 5 consecutive failures)
+            while (consecutiveFails < 5 && imageNumber <= 100) {
+                const imagePath = `../images/gallery/${imageNumber}.jpg`;
                 
-                // Create fullscreen overlay
-                const fullscreen = document.createElement('div');
-                fullscreen.className = 'gallery-fullscreen';
-                
-                const fullscreenImg = document.createElement('img');
-                fullscreenImg.src = this.src;
-                fullscreenImg.alt = this.alt;
-                
-                fullscreen.appendChild(fullscreenImg);
-                document.body.appendChild(fullscreen);
-                
-                // Close on click
-                fullscreen.addEventListener('click', function() {
-                    fullscreen.remove();
-                });
-                
-                // Close on ESC key
-                const escHandler = function(e) {
-                    if (e.key === 'Escape') {
-                        fullscreen.remove();
-                        document.removeEventListener('keydown', escHandler);
+                try {
+                    // Try to load the image
+                    const response = await fetch(imagePath, { method: 'HEAD' });
+                    
+                    if (response.ok) {
+                        loadedImages.push(imageNumber);
+                        consecutiveFails = 0;
+                    } else {
+                        consecutiveFails++;
                     }
-                };
-                document.addEventListener('keydown', escHandler);
+                } catch (error) {
+                    consecutiveFails++;
+                }
+                
+                imageNumber++;
+            }
+            
+            // Create gallery items for all found images
+            loadedImages.forEach(num => {
+                const galleryItem = document.createElement('div');
+                galleryItem.className = 'gallery-item';
+                
+                const img = document.createElement('img');
+                img.src = `../images/gallery/${num}.jpg`;
+                img.alt = `gallery image ${num}`;
+                
+                galleryItem.appendChild(img);
+                galleryGrid.appendChild(galleryItem);
             });
-        });
+            
+            // Set up fullscreen functionality after images are loaded
+            setupFullscreen();
+        }
+        
+        function setupFullscreen() {
+            const galleryItems = document.querySelectorAll('.gallery-item img');
+        
+            galleryItems.forEach(img => {
+                img.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    
+                    // Create fullscreen overlay
+                    const fullscreen = document.createElement('div');
+                    fullscreen.className = 'gallery-fullscreen';
+                    
+                    const fullscreenImg = document.createElement('img');
+                    fullscreenImg.src = this.src;
+                    fullscreenImg.alt = this.alt;
+                    
+                    fullscreen.appendChild(fullscreenImg);
+                    document.body.appendChild(fullscreen);
+                    
+                    // Close on click
+                    fullscreen.addEventListener('click', function() {
+                        fullscreen.remove();
+                    });
+                    
+                    // Close on ESC key
+                    const escHandler = function(e) {
+                        if (e.key === 'Escape') {
+                            fullscreen.remove();
+                            document.removeEventListener('keydown', escHandler);
+                        }
+                    };
+                    document.addEventListener('keydown', escHandler);
+                });
+            });
+        }
+        
+        // Load images on page load
+        loadGalleryImages();
     </script>
 </body>
 
