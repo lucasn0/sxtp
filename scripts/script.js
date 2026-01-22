@@ -1,4 +1,40 @@
 window.onload = function() {
+    // Sidebar GIF cycling functionality
+    const sidebarImg = document.querySelector('.sidebar-img');
+    const videoOverlay = document.querySelector('.video-overlay');
+    const gifs = [
+        'images/vids-gifs/sxtp-gif1.gif',
+        'images/vids-gifs/sxtp-gif2.gif',
+        'images/vids-gifs/sxtp-gif3.gif'
+    ];
+    
+    let currentGifIndex = Math.floor(Math.random() * gifs.length);
+    
+    // Function to cycle to next gif
+    const cycleGif = () => {
+        currentGifIndex = (currentGifIndex + 1) % gifs.length;
+        sidebarImg.src = gifs[currentGifIndex];
+    };
+    
+    if (sidebarImg) {
+        // Set initial random gif
+        sidebarImg.src = gifs[currentGifIndex];
+        
+        // Add click listener to image
+        sidebarImg.addEventListener('click', cycleGif);
+        
+        // Add hover cursor style
+        sidebarImg.style.cursor = 'pointer';
+    }
+    
+    if (videoOverlay) {
+        // Add click listener to overlay button
+        videoOverlay.addEventListener('click', cycleGif);
+        
+        // Add hover cursor style
+        videoOverlay.style.cursor = 'pointer';
+    }
+
     // Logo shuffle functionality
     const logo = document.getElementById('logo');
 
