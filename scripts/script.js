@@ -26,9 +26,9 @@ window.onload = function() {
             .then(response => response.json())
             .then(data => {
                 console.log('Counter data:', data);
-                if (data.count !== undefined) {
+                if (data.up_count !== undefined) {
                     // Format the number with leading zeros (5 digits)
-                    const formattedCount = String(data.count).padStart(5, '0');
+                    const formattedCount = String(data.up_count).padStart(5, '0');
                     counterValue.textContent = formattedCount;
                 } else {
                     counterValue.textContent = '00000';
