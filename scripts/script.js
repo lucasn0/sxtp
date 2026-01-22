@@ -138,6 +138,133 @@ window.onload = function() {
         });
     }
 
+    // MERCHANDISING button - Create coming soon pop-up
+    const merchandisingBtn = document.getElementById('merchandising-btn');
+    if (merchandisingBtn) {
+        merchandisingBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            createMerchandisingPopup();
+        });
+    }
+
+    function createMerchandisingPopup() {
+        const popup = document.createElement('div');
+        popup.className = 'popup-window';
+        
+        // Check if mobile
+        const isMobile = window.innerWidth < 900;
+        
+        // Position popup
+        const baseX = isMobile ? 50 : 250;
+        const baseY = isMobile ? 120 : 180;
+        popup.style.left = baseX + 'px';
+        popup.style.top = baseY + 'px';
+
+        popup.innerHTML = `
+            <div class="popup-titlebar">
+                <div class="popup-title">MERCHANDISING</div>
+                <div class="popup-close">X</div>
+            </div>
+            <div class="popup-content" style="padding: 20px; text-align: center;">
+                <p style="color: #ff00ff; font-size: 16px; font-weight: bold;">Proximamente...</p>
+            </div>
+        `;
+
+        document.body.appendChild(popup);
+
+        // Make draggable
+        const titlebar = popup.querySelector('.popup-titlebar');
+        let isDragging = false;
+        let currentX = baseX;
+        let currentY = baseY;
+        let initialX, initialY;
+        let xOffset = baseX;
+        let yOffset = baseY;
+
+        // Mouse events for desktop
+        titlebar.addEventListener('mousedown', dragStart);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', dragEnd);
+
+        // Touch events for mobile
+        titlebar.addEventListener('touchstart', touchStart, { passive: false });
+        document.addEventListener('touchmove', touchDrag, { passive: false });
+        document.addEventListener('touchend', touchEnd);
+
+        function dragStart(e) {
+            initialX = e.clientX - xOffset;
+            initialY = e.clientY - yOffset;
+
+            if (e.target === titlebar || e.target.classList.contains('popup-title')) {
+                isDragging = true;
+            }
+        }
+
+        function drag(e) {
+            if (isDragging) {
+                e.preventDefault();
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+                xOffset = currentX;
+                yOffset = currentY;
+
+                popup.style.left = currentX + 'px';
+                popup.style.top = currentY + 'px';
+            }
+        }
+
+        function dragEnd(e) {
+            initialX = currentX;
+            initialY = currentY;
+            isDragging = false;
+        }
+
+        function touchStart(e) {
+            if (e.target === titlebar || e.target.classList.contains('popup-title')) {
+                const touch = e.touches[0];
+                initialX = touch.clientX - xOffset;
+                initialY = touch.clientY - yOffset;
+                isDragging = true;
+                e.preventDefault();
+            }
+        }
+
+        function touchDrag(e) {
+            if (isDragging) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                currentX = touch.clientX - initialX;
+                currentY = touch.clientY - initialY;
+                xOffset = currentX;
+                yOffset = currentY;
+
+                popup.style.left = currentX + 'px';
+                popup.style.top = currentY + 'px';
+            }
+        }
+
+        function touchEnd(e) {
+            initialX = currentX;
+            initialY = currentY;
+            isDragging = false;
+        }
+
+        // Close button
+        const closeBtn = popup.querySelector('.popup-close');
+        closeBtn.addEventListener('click', () => {
+            popup.remove();
+        });
+
+        // Bring to front on click
+        popup.addEventListener('mousedown', () => {
+            const allPopups = document.querySelectorAll('.popup-window');
+            allPopups.forEach(p => p.style.zIndex = '10000');
+            popup.style.zIndex = '10001';
+        });
+    }
+
+    // END OF MERCHANDISING FUNCTIONALITY. SOON TO BE DELETED.
+
     function createDownloadPopup() {
         const popup = document.createElement('div');
         popup.className = 'popup-window';
