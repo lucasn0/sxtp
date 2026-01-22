@@ -106,6 +106,134 @@ window.onload = function() {
         });
     }
 
+    // DESCARGAR button - Create download pop-up
+    const descargarButton = document.querySelector('.orange-btn');
+    if (descargarButton) {
+        descargarButton.addEventListener('click', () => {
+            createDownloadPopup();
+        });
+    }
+
+    function createDownloadPopup() {
+        const popup = document.createElement('div');
+        popup.className = 'popup-window';
+        
+        // Check if mobile
+        const isMobile = window.innerWidth < 900;
+        
+        // Position popup
+        const baseX = isMobile ? 50 : 200;
+        const baseY = isMobile ? 100 : 150;
+        popup.style.left = baseX + 'px';
+        popup.style.top = baseY + 'px';
+
+        popup.innerHTML = `
+            <div class="popup-titlebar">
+                <div class="popup-title">DEMOS</div>
+                <div class="popup-close">X</div>
+            </div>
+            <div class="popup-content">
+                <div class="popup-buttons">
+                    <a href="audio/demo_1.mp3" download class="popup-btn" style="background: #ff6600">demo_1</a>
+                    <a href="audio/demo_2.mp3" download class="popup-btn" style="background: #ff6600">demo_2</a>
+                    <a href="audio/demo_3.mp3" download class="popup-btn" style="background: #ff6600">demo_3</a>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(popup);
+
+        // Make draggable
+        const titlebar = popup.querySelector('.popup-titlebar');
+        let isDragging = false;
+        let currentX = baseX;
+        let currentY = baseY;
+        let initialX, initialY;
+        let xOffset = baseX;
+        let yOffset = baseY;
+
+        // Mouse events for desktop
+        titlebar.addEventListener('mousedown', dragStart);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', dragEnd);
+
+        // Touch events for mobile
+        titlebar.addEventListener('touchstart', touchStart, { passive: false });
+        document.addEventListener('touchmove', touchDrag, { passive: false });
+        document.addEventListener('touchend', touchEnd);
+
+        function dragStart(e) {
+            initialX = e.clientX - xOffset;
+            initialY = e.clientY - yOffset;
+
+            if (e.target === titlebar || e.target.classList.contains('popup-title')) {
+                isDragging = true;
+            }
+        }
+
+        function drag(e) {
+            if (isDragging) {
+                e.preventDefault();
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+                xOffset = currentX;
+                yOffset = currentY;
+
+                popup.style.left = currentX + 'px';
+                popup.style.top = currentY + 'px';
+            }
+        }
+
+        function dragEnd(e) {
+            initialX = currentX;
+            initialY = currentY;
+            isDragging = false;
+        }
+
+        function touchStart(e) {
+            if (e.target === titlebar || e.target.classList.contains('popup-title')) {
+                const touch = e.touches[0];
+                initialX = touch.clientX - xOffset;
+                initialY = touch.clientY - yOffset;
+                isDragging = true;
+                e.preventDefault();
+            }
+        }
+
+        function touchDrag(e) {
+            if (isDragging) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                currentX = touch.clientX - initialX;
+                currentY = touch.clientY - initialY;
+                xOffset = currentX;
+                yOffset = currentY;
+
+                popup.style.left = currentX + 'px';
+                popup.style.top = currentY + 'px';
+            }
+        }
+
+        function touchEnd(e) {
+            initialX = currentX;
+            initialY = currentY;
+            isDragging = false;
+        }
+
+        // Close button
+        const closeBtn = popup.querySelector('.popup-close');
+        closeBtn.addEventListener('click', () => {
+            popup.remove();
+        });
+
+        // Bring to front on click
+        popup.addEventListener('mousedown', () => {
+            const allPopups = document.querySelectorAll('.popup-window');
+            allPopups.forEach(p => p.style.zIndex = '10000');
+            popup.style.zIndex = '10001';
+        });
+    }
+
     // ESCUCHAR button - Create pop-up windows
     const escucharButton = document.querySelector('.pink-btn');
     if (escucharButton) {
