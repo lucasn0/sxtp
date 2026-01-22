@@ -1,34 +1,17 @@
 window.onload = function() {
     // Visit Counter functionality
     const counterValue = document.getElementById('counter-value');
-    const counterEndpoint = 'https://api.counterapi.dev/v2/lucass-team-1-2580/first-counter-2580';
-    const apiKey = 'ut_wR4Tei0XFr9L7HI502QI61MM6S0rgRElRtPJtAj8';
+    const counterEndpoint = 'https://api.counterapi.dev/v2/lucass-team-1-2580/first-counter-2580/up';
     
     if (counterValue) {
-        // First increment the counter
-        fetch(`${counterEndpoint}/up`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Counter incremented:', data);
-                // Now fetch the actual count
-                return fetch(`${counterEndpoint}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${apiKey}`
-                    }
-                });
-            })
+        // Fetch and increment counter
+        fetch(counterEndpoint)
             .then(response => response.json())
             .then(data => {
                 console.log('Counter data:', data);
-                if (data.up_count !== undefined) {
+                if (data.data && data.data.up_count !== undefined) {
                     // Format the number with leading zeros (5 digits)
-                    const formattedCount = String(data.up_count).padStart(5, '0');
+                    const formattedCount = String(data.data.up_count).padStart(5, '0');
                     counterValue.textContent = formattedCount;
                 } else {
                     counterValue.textContent = '00000';
