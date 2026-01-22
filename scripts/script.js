@@ -1,4 +1,25 @@
 window.onload = function() {
+    // Visit Counter functionality
+    const counterValue = document.getElementById('counter-value');
+    const counterEndpoint = 'https://api.counterapi.dev/v2/lucass-team-1-2580/first-counter-2580';
+    
+    if (counterValue) {
+        // Fetch and increment counter
+        fetch(`${counterEndpoint}/up`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.count !== undefined) {
+                    // Format the number with leading zeros (5 digits)
+                    const formattedCount = String(data.count).padStart(5, '0');
+                    counterValue.textContent = formattedCount;
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching counter:', error);
+                counterValue.textContent = '00000';
+            });
+    }
+
     // Sidebar GIF cycling functionality
     const sidebarImg = document.querySelector('.sidebar-img');
     const videoOverlay = document.querySelector('.video-overlay');

@@ -251,6 +251,28 @@ body {
     color: #00ff00;
 }
 
+.visit-counter {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #ff00ff;
+    font-size: 10px;
+    text-align: center;
+    font-family: 'Courier New', monospace;
+}
+
+.counter-label {
+    color: #00ffff;
+    font-weight: bold;
+    text-transform: lowercase;
+}
+
+.counter-value {
+    color: #00ff00;
+    font-weight: bold;
+    margin-left: 5px;
+    letter-spacing: 1px;
+}
+
 /* ===== HERO SECTION ===== */
 .hero-section {
     background: #0000ff;
