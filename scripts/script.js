@@ -134,9 +134,9 @@ window.onload = function() {
             </div>
             <div class="popup-content">
                 <div class="popup-buttons">
-                    <a href="audio/demo_1.mp3" download class="popup-btn" style="background: #ff6600">demo_1</a>
-                    <a href="audio/demo_2.mp3" download class="popup-btn" style="background: #ff6600">demo_2</a>
-                    <a href="audio/demo_3.mp3" download class="popup-btn" style="background: #ff6600">demo_3</a>
+                    <a href="audio/sexo-debil.mp3" download class="popup-btn" style="background: #ff6600">demo_1</a>
+                    <a href="audio/sexo-debil.mp3" download class="popup-btn" style="background: #ff6600">demo_2</a>
+                    <a href="audio/sexo-debil.mp3" download class="popup-btn" style="background: #ff6600">demo_3</a>
                 </div>
             </div>
         `;
