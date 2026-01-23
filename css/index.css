@@ -3,7 +3,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" fill="white" stroke="black" stroke-width="1"><path d="M0,0 L0,16 L4,12 L6,18 L8,17 L6,11 L10,11 Z"/></svg>'), auto;
+    cursor: auto;
 }
 
 html, body {
@@ -41,7 +41,7 @@ body {
     font-size: 14px;
     text-transform: lowercase;
     padding: 5px 10px;
-    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 16 24"><path fill="white" stroke="black" stroke-width="1" d="M1,1 L1,16 L5,12 L7,19 L9,18 L7,11 L12,11 Z"/></svg>'), pointer;
+    cursor: pointer;
     user-select: none;
     white-space: nowrap;
 }
@@ -58,7 +58,7 @@ body {
     font-style: italic;
     text-decoration: underline;
     display: block;
-    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 16 24"><path fill="white" stroke="black" stroke-width="1" d="M1,1 L1,16 L5,12 L7,19 L9,18 L7,11 L12,11 Z"/></svg>'), pointer;
+    cursor: pointer;
     transition: transform 0.1s;
     text-shadow: 2px 2px 0 #000;
     animation: colorCycle 5s infinite;
@@ -115,7 +115,7 @@ body {
     background: #000;
     border: 2px solid #00ffff;
     outline: none;
-    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 16 24"><path fill="white" stroke="black" stroke-width="1" d="M1,1 L1,16 L5,12 L7,19 L9,18 L7,11 L12,11 Z"/></svg>'), pointer;
+    cursor: pointer;
 }
 
 .retro-slider::-webkit-slider-thumb {
@@ -125,7 +125,7 @@ body {
     height: 16px;
     background: #ff00ff;
     border: 2px solid #000;
-    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 16 24"><path fill="white" stroke="black" stroke-width="1" d="M1,1 L1,16 L5,12 L7,19 L9,18 L7,11 L12,11 Z"/></svg>'), pointer;
+    cursor: pointer;
     transition: background 0.2s;
 }
 
@@ -142,7 +142,7 @@ body {
     height: 16px;
     background: #ff00ff;
     border: 2px solid #000;
-    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 16 24"><path fill="white" stroke="black" stroke-width="1" d="M1,1 L1,16 L5,12 L7,19 L9,18 L7,11 L12,11 Z"/></svg>'), pointer;
+    cursor: pointer;
     transition: background 0.2s;
 }
 
@@ -203,7 +203,7 @@ body {
     font-size: 40px;
     color: #fff;
     text-shadow: 0 0 10px #000;
-    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 16 24"><path fill="white" stroke="black" stroke-width="1" d="M1,1 L1,16 L5,12 L7,19 L9,18 L7,11 L12,11 Z"/></svg>'), pointer;
+    cursor: pointer;
     transition: transform 0.2s;
 }
 
@@ -223,7 +223,7 @@ body {
     padding: 8px;
     font-size: 11px;
     border: 1px solid #00ffff;
-    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 16 24"><path fill="white" stroke="black" stroke-width="1" d="M1,1 L1,16 L5,12 L7,19 L9,18 L7,11 L12,11 Z"/></svg>'), pointer;
+    cursor: pointer;
     transition: all 0.2s;
     display: flex;
     align-items: center;
@@ -316,6 +316,7 @@ body {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+    cursor: grab;
 }
 
 .draggable-block:hover {
@@ -327,8 +328,8 @@ body {
 .draggable-block.dragging {
     opacity: 0.7;
     z-index: 1000;
-    pointer-events: none;
     transition: opacity 0.1s;
+    cursor: grabbing;
 }
 
 .draggable-block.returning {
@@ -438,7 +439,7 @@ body {
     font-weight: bold;
     font-family: 'Courier New', monospace;
     border: 3px solid #000;
-    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 16 24"><path fill="white" stroke="black" stroke-width="1" d="M1,1 L1,16 L5,12 L7,19 L9,18 L7,11 L12,11 Z"/></svg>'), pointer;
+    cursor: pointer;
     text-transform: uppercase;
     transition: all 0.1s;
     box-shadow: 5px 5px 0 #000;
@@ -817,7 +818,7 @@ a:link {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 16 24"><path fill="white" stroke="black" stroke-width="1" d="M1,1 L1,16 L5,12 L7,19 L9,18 L7,11 L12,11 Z"/></svg>'), move;
+    cursor: move;
     user-select: none;
     border-bottom: 2px solid #000;
 }
@@ -838,7 +839,7 @@ a:link {
     font-size: 14px;
     line-height: 16px;
     text-align: center;
-    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 16 24"><path fill="white" stroke="black" stroke-width="1" d="M1,1 L1,16 L5,12 L7,19 L9,18 L7,11 L12,11 Z"/></svg>'), pointer;
+    cursor: pointer;
     transition: all 0.1s;
 }
 
@@ -883,7 +884,7 @@ a:link {
     padding: 10px;
     border: 2px solid #000;
     text-decoration: none;
-    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 16 24"><path fill="white" stroke="black" stroke-width="1" d="M1,1 L1,16 L5,12 L7,19 L9,18 L7,11 L12,11 Z"/></svg>'), pointer;
+    cursor: pointer;
     transition: all 0.1s;
     text-align: center;
 }
@@ -918,7 +919,7 @@ a:link {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 16 24"><path fill="white" stroke="black" stroke-width="1" d="M1,1 L1,16 L5,12 L7,19 L9,18 L7,11 L12,11 Z"/></svg>'), move;
+    cursor: move;
     user-select: none;
     border-bottom: 2px solid #000;
 }
@@ -939,7 +940,7 @@ a:link {
     font-size: 14px;
     line-height: 16px;
     text-align: center;
-    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 16 24"><path fill="white" stroke="black" stroke-width="1" d="M1,1 L1,16 L5,12 L7,19 L9,18 L7,11 L12,11 Z"/></svg>'), pointer;
+    cursor: pointer;
     transition: all 0.1s;
 }
 
