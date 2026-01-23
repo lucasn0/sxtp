@@ -1,4 +1,22 @@
 /* ===== RESET & BASE ===== */
+
+/* ===== GLITCH EFFECTS ===== */
+.glitch-square {
+    position: fixed;
+    pointer-events: none;
+    z-index: 99999;
+    opacity: 0;
+    animation: glitchFlash 0.3s ease-in-out;
+}
+
+@keyframes glitchFlash {
+    0% { opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* ===== RESET & BASE STYLES ===== */
 * {
     margin: 0;
     padding: 0;

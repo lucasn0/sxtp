@@ -1,4 +1,54 @@
 window.onload = function() {
+    // Random Glitch Effects
+    function createGlitch() {
+        const glitchColors = [
+            '#ff00ff', '#00ffff', '#ff0000', '#00ff00', 
+            '#ffff00', '#0000ff', '#ffffff', '#000000'
+        ];
+        
+        // Create 3-8 random glitch squares
+        const glitchCount = Math.floor(Math.random() * 6) + 3;
+        
+        for (let i = 0; i < glitchCount; i++) {
+            const glitch = document.createElement('div');
+            glitch.className = 'glitch-square';
+            
+            // Random size between 10px and 80px
+            const size = Math.floor(Math.random() * 70) + 10;
+            glitch.style.width = size + 'px';
+            glitch.style.height = size + 'px';
+            
+            // Random position
+            glitch.style.left = Math.random() * 100 + '%';
+            glitch.style.top = Math.random() * 100 + '%';
+            
+            // Random color
+            glitch.style.backgroundColor = glitchColors[Math.floor(Math.random() * glitchColors.length)];
+            
+            // Random opacity
+            glitch.style.opacity = Math.random() * 0.5 + 0.5;
+            
+            document.body.appendChild(glitch);
+            
+            // Remove after animation
+            setTimeout(() => {
+                glitch.remove();
+            }, 300);
+        }
+    }
+    
+    // Trigger glitches randomly every 3-8 seconds
+    function scheduleNextGlitch() {
+        const delay = Math.floor(Math.random() * 5000) + 3000; // 3-8 seconds
+        setTimeout(() => {
+            createGlitch();
+            scheduleNextGlitch();
+        }, delay);
+    }
+    
+    // Start glitch effects
+    scheduleNextGlitch();
+
     // Visit Counter functionality
     const counterValue = document.getElementById('counter-value');
     const counterEndpoint = 'https://api.counterapi.dev/v2/lucass-team-1-2580/first-counter-2580/up';
