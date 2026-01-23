@@ -5,6 +5,35 @@
     background: #0000ff !important;
 }
 
+/* Loading indicator */
+.loading-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50vh;
+    font-size: 32px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 2px 2px 0 #000;
+}
+
+.loading-text {
+    font-family: 'Courier New', monospace;
+}
+
+.loading-dots::after {
+    content: '';
+    animation: loadingDots 1.5s steps(4, end) infinite;
+}
+
+@keyframes loadingDots {
+    0% { content: ''; }
+    25% { content: '.'; }
+    50% { content: '..'; }
+    75% { content: '...'; }
+    100% { content: ''; }
+}
+
 .gallery-title {
     font-size: 48px;
     color: #fff;

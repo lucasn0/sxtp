@@ -33,7 +33,10 @@
     <!-- Gallery Content -->
     <main class="gallery-container">
         <h1 class="gallery-title">GALLERY</h1>
-        <div class="gallery-grid" id="gallery-grid">
+        <div class="loading-indicator" id="loading-indicator">
+            <span class="loading-text">LOADING<span class="loading-dots"></span></span>
+        </div>
+        <div class="gallery-grid" id="gallery-grid" style="display: none;">
             <!-- Images will be loaded dynamically -->
         </div>
     </main>
@@ -51,6 +54,7 @@
     <script>
         // Dynamically load all images from gallery folder
         const galleryGrid = document.getElementById('gallery-grid');
+        const loadingIndicator = document.getElementById('loading-indicator');
         
         // Function to attempt loading images by number
         async function loadGalleryImages() {
@@ -94,6 +98,10 @@
             
             // Set up fullscreen functionality after images are loaded
             setupFullscreen();
+            
+            // Hide loading indicator and show gallery
+            loadingIndicator.style.display = 'none';
+            galleryGrid.style.display = 'grid';
         }
         
         function setupFullscreen() {
