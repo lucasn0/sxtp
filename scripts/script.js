@@ -105,7 +105,11 @@ window.onload = function() {
     const shareButton = document.querySelector('.cyan-btn');
     if (shareButton) {
         shareButton.addEventListener('click', async () => {
-            if (navigator.share) {
+            // Check if mobile (screen width < 900px)
+            const isMobile = window.innerWidth < 900;
+            
+            if (isMobile && navigator.share) {
+                // Use native share on mobile
                 try {
                     await navigator.share({
                         title: '$xtp - Official Site',
@@ -119,14 +123,131 @@ window.onload = function() {
                     }
                 }
             } else {
-                // Fallback: copy link to clipboard
+                // Desktop: copy to clipboard and show popup
                 try {
                     await navigator.clipboard.writeText(window.location.href);
-                    alert('Link copiado al portapapeles');
+                    createSharePopup();
                 } catch (err) {
-                    alert('Sharing not supported on this browser');
+                    console.log('Error copying to clipboard:', err);
+                    createSharePopup(); // Show popup anyway
                 }
             }
+        });
+    }
+
+    function createSharePopup() {
+        const popup = document.createElement('div');
+        popup.className = 'popup-window';
+        
+        // Check if mobile
+        const isMobile = window.innerWidth < 900;
+        
+        // Position popup
+        const baseX = isMobile ? 50 : 300;
+        const baseY = isMobile ? 150 : 200;
+        popup.style.left = baseX + 'px';
+        popup.style.top = baseY + 'px';
+
+        popup.innerHTML = `
+            <div class="popup-titlebar">
+                <div class="popup-title">COMPARTIR</div>
+                <div class="popup-close">X</div>
+            </div>
+            <div class="popup-content" style="padding: 20px; text-align: center;">
+                <p style="color: #00ff00; font-size: 16px; font-weight: bold;">LINK COPIADO!</p>
+            </div>
+        `;
+
+        document.body.appendChild(popup);
+
+        // Make draggable
+        const titlebar = popup.querySelector('.popup-titlebar');
+        let isDragging = false;
+        let currentX = baseX;
+        let currentY = baseY;
+        let initialX, initialY;
+        let xOffset = baseX;
+        let yOffset = baseY;
+
+        // Mouse events for desktop
+        titlebar.addEventListener('mousedown', dragStart);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', dragEnd);
+
+        // Touch events for mobile
+        titlebar.addEventListener('touchstart', touchStart, { passive: false });
+        document.addEventListener('touchmove', touchDrag, { passive: false });
+        document.addEventListener('touchend', touchEnd);
+
+        function dragStart(e) {
+            initialX = e.clientX - xOffset;
+            initialY = e.clientY - yOffset;
+
+            if (e.target === titlebar || e.target.classList.contains('popup-title')) {
+                isDragging = true;
+            }
+        }
+
+        function drag(e) {
+            if (isDragging) {
+                e.preventDefault();
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+                xOffset = currentX;
+                yOffset = currentY;
+
+                popup.style.left = currentX + 'px';
+                popup.style.top = currentY + 'px';
+            }
+        }
+
+        function dragEnd(e) {
+            initialX = currentX;
+            initialY = currentY;
+            isDragging = false;
+        }
+
+        function touchStart(e) {
+            if (e.target === titlebar || e.target.classList.contains('popup-title')) {
+                const touch = e.touches[0];
+                initialX = touch.clientX - xOffset;
+                initialY = touch.clientY - yOffset;
+                isDragging = true;
+                e.preventDefault();
+            }
+        }
+
+        function touchDrag(e) {
+            if (isDragging) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                currentX = touch.clientX - initialX;
+                currentY = touch.clientY - initialY;
+                xOffset = currentX;
+                yOffset = currentY;
+
+                popup.style.left = currentX + 'px';
+                popup.style.top = currentY + 'px';
+            }
+        }
+
+        function touchEnd(e) {
+            initialX = currentX;
+            initialY = currentY;
+            isDragging = false;
+        }
+
+        // Close button
+        const closeBtn = popup.querySelector('.popup-close');
+        closeBtn.addEventListener('click', () => {
+            popup.remove();
+        });
+
+        // Bring to front on click
+        popup.addEventListener('mousedown', () => {
+            const allPopups = document.querySelectorAll('.popup-window');
+            allPopups.forEach(p => p.style.zIndex = '10000');
+            popup.style.zIndex = '10001';
         });
     }
 
