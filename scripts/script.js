@@ -162,7 +162,7 @@ window.onload = function() {
                 // Use native share on mobile
                 try {
                     await navigator.share({
-                        title: '$xtp - Official Site',
+                        title: 'sxtp - Official Site',
                         text: 'poderoso dolor humano',
                         url: window.location.href
                     });
@@ -308,133 +308,6 @@ window.onload = function() {
             createDownloadPopup();
         });
     }
-
-    // MERCHANDISING button - Create coming soon pop-up
-    const merchandisingBtn = document.getElementById('merchandising-btn');
-    if (merchandisingBtn) {
-        merchandisingBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            createMerchandisingPopup();
-        });
-    }
-
-    function createMerchandisingPopup() {
-        const popup = document.createElement('div');
-        popup.className = 'popup-window';
-        
-        // Check if mobile
-        const isMobile = window.innerWidth < 900;
-        
-        // Position popup
-        const baseX = isMobile ? 50 : 250;
-        const baseY = isMobile ? 120 : 180;
-        popup.style.left = baseX + 'px';
-        popup.style.top = baseY + 'px';
-
-        popup.innerHTML = `
-            <div class="popup-titlebar">
-                <div class="popup-title">MERCHANDISING</div>
-                <div class="popup-close">X</div>
-            </div>
-            <div class="popup-content" style="padding: 20px; text-align: center;">
-                <p style="color: #ff00ff; font-size: 16px; font-weight: bold;">Proximamente...</p>
-            </div>
-        `;
-
-        document.body.appendChild(popup);
-
-        // Make draggable
-        const titlebar = popup.querySelector('.popup-titlebar');
-        let isDragging = false;
-        let currentX = baseX;
-        let currentY = baseY;
-        let initialX, initialY;
-        let xOffset = baseX;
-        let yOffset = baseY;
-
-        // Mouse events for desktop
-        titlebar.addEventListener('mousedown', dragStart);
-        document.addEventListener('mousemove', drag);
-        document.addEventListener('mouseup', dragEnd);
-
-        // Touch events for mobile
-        titlebar.addEventListener('touchstart', touchStart, { passive: false });
-        document.addEventListener('touchmove', touchDrag, { passive: false });
-        document.addEventListener('touchend', touchEnd);
-
-        function dragStart(e) {
-            initialX = e.clientX - xOffset;
-            initialY = e.clientY - yOffset;
-
-            if (e.target === titlebar || e.target.classList.contains('popup-title')) {
-                isDragging = true;
-            }
-        }
-
-        function drag(e) {
-            if (isDragging) {
-                e.preventDefault();
-                currentX = e.clientX - initialX;
-                currentY = e.clientY - initialY;
-                xOffset = currentX;
-                yOffset = currentY;
-
-                popup.style.left = currentX + 'px';
-                popup.style.top = currentY + 'px';
-            }
-        }
-
-        function dragEnd(e) {
-            initialX = currentX;
-            initialY = currentY;
-            isDragging = false;
-        }
-
-        function touchStart(e) {
-            if (e.target === titlebar || e.target.classList.contains('popup-title')) {
-                const touch = e.touches[0];
-                initialX = touch.clientX - xOffset;
-                initialY = touch.clientY - yOffset;
-                isDragging = true;
-                e.preventDefault();
-            }
-        }
-
-        function touchDrag(e) {
-            if (isDragging) {
-                e.preventDefault();
-                const touch = e.touches[0];
-                currentX = touch.clientX - initialX;
-                currentY = touch.clientY - initialY;
-                xOffset = currentX;
-                yOffset = currentY;
-
-                popup.style.left = currentX + 'px';
-                popup.style.top = currentY + 'px';
-            }
-        }
-
-        function touchEnd(e) {
-            initialX = currentX;
-            initialY = currentY;
-            isDragging = false;
-        }
-
-        // Close button
-        const closeBtn = popup.querySelector('.popup-close');
-        closeBtn.addEventListener('click', () => {
-            popup.remove();
-        });
-
-        // Bring to front on click
-        popup.addEventListener('mousedown', () => {
-            const allPopups = document.querySelectorAll('.popup-window');
-            allPopups.forEach(p => p.style.zIndex = '10000');
-            popup.style.zIndex = '10001';
-        });
-    }
-
-    // END OF MERCHANDISING FUNCTIONALITY. SOON TO BE DELETED.
 
     function createDownloadPopup() {
         const popup = document.createElement('div');
@@ -932,20 +805,324 @@ window.onload = function() {
             // Disabled for mobile
             return;
             if (!isDragging) return;
-            
+
             isDragging = false;
             block.classList.remove('dragging');
             block.classList.add('returning');
-            
+
             // Return to original position
             block.style.transform = 'translate(0, 0)';
             currentX = 0;
             currentY = 0;
-            
+
             setTimeout(() => {
                 block.classList.remove('returning');
                 block.style.zIndex = '';
             }, 600);
         });
     });
+
+    // ===== FISH GAME — Flappy Bird style =====
+    function initFishGame() {
+        const canvas = document.getElementById('fish-game-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+
+        // — Constants —
+        const OBS_W    = 32;    // obstacle column width
+        const GRAVITY  = 0.52;  // gravity per frame
+        const FLAP_V   = -10.0; // upward velocity on flap
+        const MAX_VY   = 14;    // terminal fall speed
+
+        // — State —
+        let gameRunning = false;
+        let isDead      = false;
+        let deathTimer  = 0;
+        let score       = 0;
+        let speed       = 2.5;
+        let obsTimer    = 0;
+        let obsInterval = 140;  // frames between obstacle pairs
+
+        const fish = { x: 80, y: 0, vy: 0, w: 44, h: 26 };
+        let obstacles  = [];
+
+        // — Canvas sizing —
+        function resize() {
+            const box = canvas.parentElement;
+            canvas.width  = box.offsetWidth;
+            canvas.height = box.offsetHeight || 180;
+        }
+        resize();
+        window.addEventListener('resize', function() {
+            resize();
+            if (!gameRunning && !isDead) resetFish();
+        });
+
+        // Gap size scales with canvas height
+        function gapSize() { return Math.max(80, canvas.height * 0.40); }
+
+        function resetFish() {
+            fish.y  = canvas.height / 2 - fish.h / 2;
+            fish.vy = 0;
+        }
+        resetFish();
+
+        function spawnObstacle() {
+            const gs  = gapSize();
+            const min = gs / 2 + 20;
+            const max = canvas.height - gs / 2 - 20;
+            obstacles.push({
+                x:      canvas.width + 10,
+                cy:     min + Math.random() * (max - min),
+                passed: false
+            });
+        }
+
+        // — Flap (works ANY time during play) —
+        function flap() {
+            if (isDead) return;
+            if (!gameRunning) { startGame(); return; }
+            fish.vy = FLAP_V;
+        }
+
+        function startGame() {
+            gameRunning = true;
+            isDead      = false;
+            score       = 0;
+            speed       = 2.5;
+            obsTimer    = 80;   // start close to first spawn so obstacles appear quickly
+            obsInterval = 100;  // interval between subsequent pairs
+            obstacles   = [];
+            resetFish();
+        }
+
+        // — Draw fish (tilts with velocity) —
+        function drawFish(dead) {
+            const { x, y, w, h } = fish;
+            ctx.save();
+            if (!dead) {
+                const tilt = Math.max(-0.45, Math.min(0.45, fish.vy * 0.055));
+                ctx.translate(x + w / 2, y + h / 2);
+                ctx.rotate(tilt);
+                ctx.translate(-(x + w / 2), -(y + h / 2));
+            }
+            // Tail
+            ctx.fillStyle = dead ? '#888' : '#ff6600';
+            ctx.beginPath();
+            ctx.moveTo(x + 5,  y + h / 2);
+            ctx.lineTo(x - 18, y + 3);
+            ctx.lineTo(x - 18, y + h - 3);
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.stroke();
+            // Body
+            ctx.fillStyle = dead ? '#aaa' : '#ffaa00';
+            ctx.beginPath();
+            ctx.ellipse(x + w / 2 + 3, y + h / 2, w / 2, h / 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#000'; ctx.lineWidth = 2.5; ctx.stroke();
+            // Stripe
+            ctx.fillStyle = dead ? '#999' : '#ff7700';
+            ctx.beginPath();
+            ctx.ellipse(x + w / 2 + 3, y + h / 2, w / 4, h / 2 - 1, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Fin
+            ctx.fillStyle = dead ? '#999' : '#ff8800';
+            ctx.beginPath();
+            ctx.moveTo(x + w / 2 + 6,  y + 3);
+            ctx.lineTo(x + w / 2 + 18, y - 10);
+            ctx.lineTo(x + w / 2 + 27, y + 3);
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5; ctx.stroke();
+            // Eye
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(x + w - 9, y + h * 0.35, 6, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#000';
+            ctx.beginPath(); ctx.arc(x + w - 7, y + h * 0.35, 3, 0, Math.PI * 2); ctx.fill();
+            if (dead) {
+                ctx.strokeStyle = '#000'; ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.moveTo(x + w - 13, y + h * 0.20); ctx.lineTo(x + w - 4, y + h * 0.50);
+                ctx.moveTo(x + w - 4,  y + h * 0.20); ctx.lineTo(x + w - 13, y + h * 0.50);
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        // — Draw one hook (top or bottom) —
+        // tipY = the dangerous end closest to the gap
+        function drawHookShape(cx, tipY, fromTop) {
+            ctx.save();
+            const wallY     = fromTop ? 0 : canvas.height;
+            const shaftBase = tipY + (fromTop ? -40 : 40);
+
+            // Fishing line from wall
+            ctx.strokeStyle = 'rgba(210,210,210,0.7)'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(cx, wallY); ctx.lineTo(cx, shaftBase); ctx.stroke();
+
+            // Shaft + J-bend
+            ctx.strokeStyle = '#c8c8c8'; ctx.lineWidth = 5;
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.moveTo(cx, shaftBase);
+            ctx.lineTo(cx, tipY);
+            if (fromTop) {
+                // J curves right then the point aims back up
+                ctx.quadraticCurveTo(cx + 24, tipY, cx + 24, tipY - 18);
+            } else {
+                // Inverted J curves right then point aims back down
+                ctx.quadraticCurveTo(cx + 24, tipY, cx + 24, tipY + 18);
+            }
+            ctx.stroke();
+
+            // Barb
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            if (fromTop) {
+                ctx.moveTo(cx + 24, tipY - 18); ctx.lineTo(cx + 12, tipY - 32);
+            } else {
+                ctx.moveTo(cx + 24, tipY + 18); ctx.lineTo(cx + 12, tipY + 32);
+            }
+            ctx.stroke();
+
+            // Metal glint
+            ctx.fillStyle = 'rgba(255,255,255,0.88)';
+            ctx.beginPath();
+            ctx.arc(cx + 1, shaftBase + (fromTop ? 9 : -9), 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawObstacles() {
+            const gs = gapSize();
+            obstacles.forEach(function(obs) {
+                const cx     = obs.x + OBS_W / 2;
+                const topTip = obs.cy - gs / 2;   // bottom of top hook
+                const botTip = obs.cy + gs / 2;   // top of bottom hook
+                drawHookShape(cx, topTip, true);
+                drawHookShape(cx, botTip, false);
+            });
+        }
+
+        // — Collision: fish hitbox vs obstacle gap —
+        function checkHit(obs) {
+            const gs     = gapSize();
+            const gapTop = obs.cy - gs / 2;
+            const gapBot = obs.cy + gs / 2;
+            // Inset hitbox slightly for fairness
+            const fx = fish.x + 6,  fy = fish.y + 5;
+            const fr = fish.x + fish.w - 9, fb = fish.y + fish.h - 5;
+            if (fr <= obs.x || fx >= obs.x + OBS_W) return false;
+            return (fy < gapTop || fb > gapBot);
+        }
+
+        // — Game loop —
+        function gameLoop() {
+            resize();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Start screen
+            if (!gameRunning && !isDead) {
+                ctx.fillStyle = 'rgba(0,0,0,0.68)';
+                ctx.textAlign = 'center';
+                ctx.font = 'bold ' + Math.min(20, Math.floor(canvas.width / 26)) + 'px "Courier New"';
+                ctx.fillText('ESPACIO / TAP PARA JUGAR', canvas.width / 2, canvas.height / 2 - 14);
+                ctx.font = 'bold ' + Math.min(15, Math.floor(canvas.width / 36)) + 'px "Courier New"';
+                ctx.fillText('esquivá los anzuelos', canvas.width / 2, canvas.height / 2 + 14);
+                drawFish(false);
+                requestAnimationFrame(gameLoop);
+                return;
+            }
+
+            // Death screen
+            if (isDead) {
+                deathTimer++;
+                drawObstacles();
+                drawFish(true);
+                ctx.fillStyle = 'rgba(0,0,0,0.75)';
+                ctx.textAlign = 'center';
+                ctx.font = 'bold ' + Math.min(22, Math.floor(canvas.width / 22)) + 'px "Courier New"';
+                ctx.fillText('ATRAPADO!  score: ' + score, canvas.width / 2, canvas.height / 2 - 10);
+                ctx.font = 'bold ' + Math.min(15, Math.floor(canvas.width / 36)) + 'px "Courier New"';
+                ctx.fillText('tap / espacio para volver', canvas.width / 2, canvas.height / 2 + 16);
+                if (deathTimer > 80) { isDead = false; resetFish(); }
+                requestAnimationFrame(gameLoop);
+                return;
+            }
+
+            // — Physics —
+            fish.vy = Math.min(fish.vy + GRAVITY, MAX_VY);
+            fish.y += fish.vy;
+
+            // Wall collision → die
+            if (fish.y <= 0 || fish.y + fish.h >= canvas.height) {
+                isDead = true; deathTimer = 0; gameRunning = false;
+                requestAnimationFrame(gameLoop);
+                return;
+            }
+
+            // — Obstacles —
+            obsTimer++;
+            if (obsTimer >= obsInterval) {
+                spawnObstacle();
+                obsTimer    = 0;
+                obsInterval = Math.max(72, obsInterval - 2);
+            }
+
+            let killed = false;
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                obstacles[i].x -= speed;
+                // Score when fish passes the obstacle
+                if (!obstacles[i].passed && obstacles[i].x + OBS_W < fish.x) {
+                    obstacles[i].passed = true;
+                    score++;
+                    // Speed up every 5 points
+                    if (score % 5 === 0) speed = Math.min(speed + 0.55, 9);
+                }
+                if (obstacles[i].x + OBS_W < -40) { obstacles.splice(i, 1); continue; }
+                if (checkHit(obstacles[i])) killed = true;
+            }
+
+            if (killed) {
+                isDead = true; deathTimer = 0; gameRunning = false;
+                requestAnimationFrame(gameLoop);
+                return;
+            }
+
+            drawObstacles();
+            drawFish(false);
+
+            // Score display
+            ctx.fillStyle = 'rgba(0,0,0,0.58)';
+            ctx.textAlign = 'left';
+            ctx.font = 'bold ' + Math.min(18, Math.floor(canvas.width / 30)) + 'px "Courier New"';
+            ctx.fillText('score: ' + score, 10, 28);
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // — Input —
+        document.addEventListener('keydown', function(e) {
+            if (e.code === 'Space' || e.code === 'ArrowUp') {
+                const tag = document.activeElement ? document.activeElement.tagName : '';
+                if (tag !== 'INPUT' && tag !== 'TEXTAREA') e.preventDefault();
+                if (isDead && deathTimer > 30) { isDead = false; resetFish(); return; }
+                flap();
+            }
+        });
+        canvas.addEventListener('click', function() {
+            if (isDead && deathTimer > 30) { isDead = false; resetFish(); return; }
+            flap();
+        });
+        canvas.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            if (isDead && deathTimer > 30) { isDead = false; resetFish(); return; }
+            flap();
+        }, { passive: false });
+
+        gameLoop();
+    }
+
+    initFishGame();
 }
