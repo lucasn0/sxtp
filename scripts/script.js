@@ -73,37 +73,39 @@ window.onload = function() {
             });
     }
 
-    // Sidebar GIF cycling functionality
-    const sidebarImg = document.querySelector('.sidebar-img');
+    // Sidebar video cycling functionality
+    const sidebarVideo = document.querySelector('.sidebar-img');
     const videoOverlay = document.querySelector('.video-overlay');
-    const gifs = [
-        'images/vids-gifs/sxtp-gif1.gif',
-        'images/vids-gifs/sxtp-gif2.gif',
-        'images/vids-gifs/sxtp-gif3.gif'
+    const videos = [
+        'images/vids-gifs/camara-3.mp4',
+        'images/vids-gifs/camara-4.mp4',
+        'images/vids-gifs/camara-5.mp4',
+        'images/vids-gifs/camara-7.mp4'
     ];
     
-    let currentGifIndex = Math.floor(Math.random() * gifs.length);
+    let currentVideoIndex = Math.floor(Math.random() * videos.length);
     
-    // Function to cycle to next gif
-    const cycleGif = () => {
-        currentGifIndex = (currentGifIndex + 1) % gifs.length;
-        sidebarImg.src = gifs[currentGifIndex];
+    // Function to cycle to next video
+    const cycleVideo = () => {
+        currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+        sidebarVideo.src = videos[currentVideoIndex];
+        sidebarVideo.play();
     };
     
-    if (sidebarImg) {
-        // Set initial random gif
-        sidebarImg.src = gifs[currentGifIndex];
+    if (sidebarVideo) {
+        // Set initial random video
+        sidebarVideo.src = videos[currentVideoIndex];
         
-        // Add click listener to image
-        sidebarImg.addEventListener('click', cycleGif);
+        // Add click listener to video
+        sidebarVideo.addEventListener('click', cycleVideo);
         
         // Add hover cursor style
-        sidebarImg.style.cursor = 'pointer';
+        sidebarVideo.style.cursor = 'pointer';
     }
     
     if (videoOverlay) {
         // Add click listener to overlay button
-        videoOverlay.addEventListener('click', cycleGif);
+        videoOverlay.addEventListener('click', cycleVideo);
         
         // Add hover cursor style
         videoOverlay.style.cursor = 'pointer';
@@ -898,57 +900,155 @@ window.onload = function() {
 
         // — Draw fish (tilts with velocity) —
         function drawFish(dead) {
-            const { x, y, w, h } = fish;
-            ctx.save();
-            if (!dead) {
-                const tilt = Math.max(-0.45, Math.min(0.45, fish.vy * 0.055));
-                ctx.translate(x + w / 2, y + h / 2);
-                ctx.rotate(tilt);
-                ctx.translate(-(x + w / 2), -(y + h / 2));
-            }
-            // Tail
-            ctx.fillStyle = dead ? '#888' : '#ff6600';
+    const stops = [
+        [255,0,200],[0,230,255],[200,255,0],[255,200,0],[120,0,255],[255,0,200]
+    ];
+    function iridColor(phase, alpha=1){
+        const n = stops.length-1;
+        const pos = ((phase % n) + n) % n;
+        const i = Math.floor(pos), f = pos - i;
+        const a = stops[i], b = stops[(i+1) % stops.length];
+        const r = Math.round(a[0]+(b[0]-a[0])*f);
+        const g = Math.round(a[1]+(b[1]-a[1])*f);
+        const bl= Math.round(a[2]+(b[2]-a[2])*f);
+        if(dead) return `rgba(100,100,110,${alpha})`;
+        return `rgba(${r},${g},${bl},${alpha})`;
+    }
+
+    // t viene del scope de initFishGame — si no existe, crealo arriba del gameLoop
+    const base = (typeof gameT !== 'undefined' ? gameT : 0) * 0.35;
+    const { x, y, w, h } = fish;
+    const cx = x + w/2, cy = y + h/2;
+
+    ctx.save();
+
+    // Tilt por velocidad
+    if(!dead){
+        const tilt = Math.max(-0.45, Math.min(0.45, fish.vy * 0.055));
+        ctx.translate(cx, cy);
+        ctx.rotate(tilt);
+        ctx.translate(-cx, -cy);
+    }
+
+    ctx.translate(cx, cy);
+
+    const tw = Math.sin((typeof gameT !== 'undefined' ? gameT : 0) * 3) * 4;
+
+    // Cola — lóbulo superior
+    ctx.beginPath();
+    ctx.moveTo(-w*0.45, 0);
+    ctx.bezierCurveTo(-w*0.6,-3+tw,-w*0.85,-h*0.55+tw,-w*0.8,-h*0.22+tw);
+    ctx.bezierCurveTo(-w*0.75,0,-w*0.55,0,-w*0.45,0);
+    const tg1 = ctx.createLinearGradient(-w*0.85,-h*0.55,-w*0.45,0);
+    tg1.addColorStop(0, iridColor(base+2.5, dead?0.3:0.4));
+    tg1.addColorStop(1, iridColor(base+2.5, dead?0.6:0.9));
+    ctx.fillStyle = tg1; ctx.fill();
+    ctx.strokeStyle = iridColor(base+2.8, 0.5); ctx.lineWidth=0.8; ctx.stroke();
+
+    // Cola — lóbulo inferior
+    ctx.beginPath();
+    ctx.moveTo(-w*0.45, 0);
+    ctx.bezierCurveTo(-w*0.6,3-tw,-w*0.85,h*0.55-tw,-w*0.8,h*0.22-tw);
+    ctx.bezierCurveTo(-w*0.75,0,-w*0.55,0,-w*0.45,0);
+    const tg2 = ctx.createLinearGradient(-w*0.85,h*0.55,-w*0.45,0);
+    tg2.addColorStop(0, iridColor(base+1.8, dead?0.3:0.4));
+    tg2.addColorStop(1, iridColor(base+1.8, dead?0.6:0.9));
+    ctx.fillStyle = tg2; ctx.fill();
+    ctx.strokeStyle = iridColor(base+2.0, 0.5); ctx.lineWidth=0.8; ctx.stroke();
+
+    // Cuerpo
+    if(!dead){ ctx.shadowBlur=8; ctx.shadowColor=iridColor(base,0.3); }
+    ctx.beginPath();
+    ctx.ellipse(0, 0, w*0.5, h*0.5, 0, 0, Math.PI*2);
+    const bodyGrad = ctx.createLinearGradient(-w*0.5,-h*0.5,w*0.5,h*0.5);
+    bodyGrad.addColorStop(0,   iridColor(base+0,   0.95));
+    bodyGrad.addColorStop(0.35,iridColor(base+0.9, 0.85));
+    bodyGrad.addColorStop(0.7, iridColor(base+1.7, 0.90));
+    bodyGrad.addColorStop(1,   iridColor(base+2.5, 0.80));
+    ctx.fillStyle = bodyGrad; ctx.fill();
+    ctx.strokeStyle = iridColor(base+1, 0.85); ctx.lineWidth=1.2; ctx.stroke();
+    ctx.shadowBlur=0;
+
+    // Highlight especular
+    ctx.beginPath();
+    ctx.ellipse(-w*0.05,-h*0.18,w*0.28,h*0.15,-0.1,0,Math.PI*2);
+    const hilite=ctx.createLinearGradient(-w*0.3,-h*0.3,w*0.2,0);
+    hilite.addColorStop(0,'rgba(255,255,255,0)');
+    hilite.addColorStop(0.4,'rgba(255,255,255,0.5)');
+    hilite.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=hilite; ctx.fill();
+
+    // Escamas
+    const scaleRows=[
+        {oy:-0.12,oxs:[-0.32,-0.16,0,0.16],r:h*0.28},
+        {oy: 0.06,oxs:[-0.24,-0.08,0.08,0.22],r:h*0.26},
+        {oy: 0.22,oxs:[-0.18,-0.04,0.1],r:h*0.22},
+    ];
+    scaleRows.forEach((row,ri)=>{
+        row.oxs.forEach((ox,si)=>{
+            const ph=base+ri*0.7+si*0.45;
             ctx.beginPath();
-            ctx.moveTo(x + 5,  y + h / 2);
-            ctx.lineTo(x - 18, y + 3);
-            ctx.lineTo(x - 18, y + h - 3);
-            ctx.closePath();
-            ctx.fill();
-            ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.stroke();
-            // Body
-            ctx.fillStyle = dead ? '#aaa' : '#ffaa00';
-            ctx.beginPath();
-            ctx.ellipse(x + w / 2 + 3, y + h / 2, w / 2, h / 2, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = '#000'; ctx.lineWidth = 2.5; ctx.stroke();
-            // Stripe
-            ctx.fillStyle = dead ? '#999' : '#ff7700';
-            ctx.beginPath();
-            ctx.ellipse(x + w / 2 + 3, y + h / 2, w / 4, h / 2 - 1, 0, 0, Math.PI * 2);
-            ctx.fill();
-            // Fin
-            ctx.fillStyle = dead ? '#999' : '#ff8800';
-            ctx.beginPath();
-            ctx.moveTo(x + w / 2 + 6,  y + 3);
-            ctx.lineTo(x + w / 2 + 18, y - 10);
-            ctx.lineTo(x + w / 2 + 27, y + 3);
-            ctx.closePath();
-            ctx.fill();
-            ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5; ctx.stroke();
-            // Eye
-            ctx.fillStyle = '#fff';
-            ctx.beginPath(); ctx.arc(x + w - 9, y + h * 0.35, 6, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = '#000';
-            ctx.beginPath(); ctx.arc(x + w - 7, y + h * 0.35, 3, 0, Math.PI * 2); ctx.fill();
-            if (dead) {
-                ctx.strokeStyle = '#000'; ctx.lineWidth = 2.5;
-                ctx.beginPath();
-                ctx.moveTo(x + w - 13, y + h * 0.20); ctx.lineTo(x + w - 4, y + h * 0.50);
-                ctx.moveTo(x + w - 4,  y + h * 0.20); ctx.lineTo(x + w - 13, y + h * 0.50);
-                ctx.stroke();
-            }
-            ctx.restore();
-        }
+            ctx.arc(ox*w, row.oy*h, row.r, Math.PI*1.05, Math.PI*0.05, true);
+            ctx.strokeStyle=iridColor(ph,0.5); ctx.lineWidth=0.7; ctx.stroke();
+        });
+    });
+
+    // Aleta dorsal
+    ctx.beginPath();
+    ctx.moveTo(-w*0.15,-h*0.5);
+    ctx.bezierCurveTo(-w*0.05,-h*1.0,w*0.15,-h*1.1,w*0.35,-h*0.5);
+    ctx.strokeStyle=iridColor(base+1.5,0.7); ctx.lineWidth=0.9; ctx.stroke();
+    for(let i=0;i<4;i++){
+        const f2=i/3;
+        const fx=(-0.15+f2*0.5)*w;
+        const fy=(-0.5-Math.sin(f2*Math.PI)*0.6)*h;
+        ctx.beginPath();
+        ctx.moveTo(fx,-h*0.5); ctx.lineTo(fx, fy);
+        ctx.strokeStyle=iridColor(base+i*0.4,0.25); ctx.lineWidth=0.5; ctx.stroke();
+    }
+
+    // Aleta pectoral
+    ctx.beginPath();
+    ctx.moveTo(w*0.05,h*0.25);
+    ctx.bezierCurveTo(w*0.22,h*0.6,w*0.38,h*0.55,w*0.35,h*0.25);
+    ctx.strokeStyle=iridColor(base+2.2,0.6); ctx.lineWidth=0.8; ctx.stroke();
+
+    // Cabeza
+    ctx.beginPath();
+    ctx.moveTo(w*0.42,-h*0.32);
+    ctx.bezierCurveTo(w*0.62,-h*0.1,w*0.65,h*0.1,w*0.42,h*0.32);
+    ctx.strokeStyle=iridColor(base+0.8,0.75); ctx.lineWidth=1; ctx.stroke();
+
+    // Ojo
+    ctx.shadowBlur=5; ctx.shadowColor=iridColor(base+0.5,0.5);
+    ctx.beginPath(); ctx.arc(w*0.35,-h*0.06,h*0.22,0,Math.PI*2);
+    const eyeGrad=ctx.createRadialGradient(w*0.33,-h*0.1,0.5,w*0.35,-h*0.06,h*0.22);
+    eyeGrad.addColorStop(0,  iridColor(base+1,  0.95));
+    eyeGrad.addColorStop(0.6,iridColor(base+2.5,0.7));
+    eyeGrad.addColorStop(1,  'rgba(0,0,0,0.85)');
+    ctx.fillStyle=eyeGrad; ctx.fill();
+    ctx.strokeStyle=iridColor(base,0.8); ctx.lineWidth=0.7; ctx.stroke();
+    ctx.shadowBlur=0;
+    // Pupila
+    ctx.beginPath(); ctx.arc(w*0.36,-h*0.06,h*0.1,0,Math.PI*2);
+    ctx.fillStyle='rgba(0,0,0,0.9)'; ctx.fill();
+    // Brillos
+    ctx.beginPath(); ctx.arc(w*0.33,-h*0.12,h*0.07,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.fill();
+    ctx.beginPath(); ctx.arc(w*0.38,-h*0.02,h*0.04,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.fill();
+
+    // X en los ojos si muerto
+    if(dead){
+        ctx.strokeStyle='rgba(255,80,80,0.9)'; ctx.lineWidth=2;
+        ctx.beginPath();
+        ctx.moveTo(w*0.28,-h*0.18); ctx.lineTo(w*0.43,h*0.06);
+        ctx.moveTo(w*0.43,-h*0.18); ctx.lineTo(w*0.28,h*0.06);
+        ctx.stroke();
+    }
+
+    ctx.restore();
+}
 
         // — Draw one hook (top or bottom) —
         // tipY = the dangerous end closest to the gap
@@ -1125,4 +1225,209 @@ window.onload = function() {
     }
 
     initFishGame();
+
+    // ===== FISH CURSOR =====
+function initFishCursor() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 140;
+    canvas.height = 70;
+    canvas.style.cssText = 'position:fixed;top:0;left:0;pointer-events:none;z-index:999999;display:none';
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+
+    let mx=300, my=300, px=300, py=300, angle=0, targetAngle=0, t=0;
+
+    const stops = [
+        [255,0,200],[0,230,255],[200,255,0],[255,200,0],[120,0,255],[255,0,200]
+    ];
+
+    function iridColor(phase, alpha=1){
+        const n = stops.length-1;
+        const pos = ((phase % n) + n) % n;
+        const i = Math.floor(pos), f = pos - i;
+        const a = stops[i], b = stops[(i+1) % stops.length];
+        const r = Math.round(a[0]+(b[0]-a[0])*f);
+        const g = Math.round(a[1]+(b[1]-a[1])*f);
+        const bl= Math.round(a[2]+(b[2]-a[2])*f);
+        return `rgba(${r},${g},${bl},${alpha})`;
+    }
+
+    function drawMetallicFish(){
+        ctx.clearRect(0, 0, 140, 70);
+        ctx.save();
+        ctx.translate(58, 35);
+
+        const base = t * 0.35;
+        const tw = Math.sin(t * 3) * 5;
+
+        // Cola — lóbulo superior
+        ctx.beginPath();
+        ctx.moveTo(-26, 0);
+        ctx.bezierCurveTo(-36,-4+tw,-52,-14+tw,-50,-6+tw);
+        ctx.bezierCurveTo(-48,2,-34,0,-26,0);
+        const tg1 = ctx.createLinearGradient(-50,-14,-26,0);
+        tg1.addColorStop(0, iridColor(base+2.5, 0.3));
+        tg1.addColorStop(1, iridColor(base+2.5, 0.9));
+        ctx.fillStyle = tg1;
+        ctx.fill();
+        ctx.strokeStyle = iridColor(base+2.8, 0.6);
+        ctx.lineWidth = 0.7;
+        ctx.stroke();
+
+        // Cola — lóbulo inferior
+        ctx.beginPath();
+        ctx.moveTo(-26, 0);
+        ctx.bezierCurveTo(-36,4-tw,-52,14-tw,-50,6-tw);
+        ctx.bezierCurveTo(-48,-2,-34,0,-26,0);
+        const tg2 = ctx.createLinearGradient(-50,14,-26,0);
+        tg2.addColorStop(0, iridColor(base+1.8, 0.3));
+        tg2.addColorStop(1, iridColor(base+1.8, 0.9));
+        ctx.fillStyle = tg2;
+        ctx.fill();
+        ctx.strokeStyle = iridColor(base+2.0, 0.6);
+        ctx.lineWidth = 0.7;
+        ctx.stroke();
+
+        // Cuerpo — glow
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = iridColor(base, 0.4);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 30, 12, 0, 0, Math.PI*2);
+        const bodyGrad = ctx.createLinearGradient(-30,-12,30,12);
+        bodyGrad.addColorStop(0,   iridColor(base+0,   0.95));
+        bodyGrad.addColorStop(0.3, iridColor(base+0.8, 0.85));
+        bodyGrad.addColorStop(0.6, iridColor(base+1.6, 0.90));
+        bodyGrad.addColorStop(1,   iridColor(base+2.4, 0.80));
+        ctx.fillStyle = bodyGrad;
+        ctx.fill();
+        ctx.strokeStyle = iridColor(base+1, 0.9);
+        ctx.lineWidth = 1.1;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        // Línea lateral
+        ctx.beginPath();
+        ctx.moveTo(-24, 1);
+        ctx.bezierCurveTo(-8,3,8,2,26,0);
+        ctx.strokeStyle = iridColor(base+3, 0.35);
+        ctx.lineWidth = 0.6;
+        ctx.stroke();
+
+        // Highlight especular
+        ctx.beginPath();
+        ctx.ellipse(-2,-4,18,4,-0.1,0,Math.PI*2);
+        const hilite = ctx.createLinearGradient(-20,-8,16,0);
+        hilite.addColorStop(0,   'rgba(255,255,255,0)');
+        hilite.addColorStop(0.4, 'rgba(255,255,255,0.55)');
+        hilite.addColorStop(1,   'rgba(255,255,255,0)');
+        ctx.fillStyle = hilite;
+        ctx.fill();
+
+        // Escamas — 3 filas de arcos
+        const scaleRows = [
+            { y:-3, xs:[-18,-10,-2,6,14], r:6.5 },
+            { y: 2, xs:[-14,-6,2,10,18],  r:6   },
+            { y: 7, xs:[-10,-2,6,14],     r:5.5 },
+        ];
+        scaleRows.forEach((row, ri) => {
+            row.xs.forEach((sx, si) => {
+                const ph = base + ri*0.7 + si*0.45;
+                ctx.beginPath();
+                ctx.arc(sx, row.y, row.r, Math.PI*1.05, Math.PI*0.05, true);
+                ctx.strokeStyle = iridColor(ph, 0.55);
+                ctx.lineWidth = 0.75;
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(sx-1, row.y-1, row.r*0.45, Math.PI*1.3, Math.PI*1.85, false);
+                ctx.strokeStyle = iridColor(ph+1, 0.3);
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+            });
+        });
+
+        // Aleta dorsal
+        ctx.beginPath();
+        ctx.moveTo(-8,-12);
+        ctx.bezierCurveTo(-2,-24,10,-26,20,-12);
+        ctx.strokeStyle = iridColor(base+1.5, 0.75);
+        ctx.lineWidth = 0.9;
+        ctx.stroke();
+        for(let i=0;i<4;i++){
+            const f2=i/3;
+            const fx=-8+f2*28, fy=-12-Math.sin(f2*Math.PI)*14;
+            ctx.beginPath();
+            ctx.moveTo(fx,-12);
+            ctx.lineTo(fx+(fx+8)*0.05, fy);
+            ctx.strokeStyle = iridColor(base+i*0.4, 0.3);
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+        }
+
+        // Aleta pectoral
+        ctx.beginPath();
+        ctx.moveTo(4,8);
+        ctx.bezierCurveTo(12,16,22,14,20,8);
+        ctx.strokeStyle = iridColor(base+2.2, 0.6);
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+
+        // Cabeza
+        ctx.beginPath();
+        ctx.moveTo(26,-8);
+        ctx.bezierCurveTo(36,-3,38,3,26,8);
+        ctx.strokeStyle = iridColor(base+0.8, 0.8);
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Ojo
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = iridColor(base+0.5, 0.5);
+        ctx.beginPath();
+        ctx.arc(28,-1,4,0,Math.PI*2);
+        const eyeGrad = ctx.createRadialGradient(27,-1.5,0.5,28,-1,4);
+        eyeGrad.addColorStop(0,   iridColor(base+1,   0.95));
+        eyeGrad.addColorStop(0.6, iridColor(base+2.5, 0.7));
+        eyeGrad.addColorStop(1,   'rgba(0,0,0,0.85)');
+        ctx.fillStyle = eyeGrad;
+        ctx.fill();
+        ctx.strokeStyle = iridColor(base, 0.8);
+        ctx.lineWidth = 0.7;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        ctx.beginPath(); ctx.arc(28.5,-1,1.8,0,Math.PI*2);
+        ctx.fillStyle = 'rgba(0,0,0,0.9)'; ctx.fill();
+        ctx.beginPath(); ctx.arc(27.2,-2.2,1.1,0,Math.PI*2);
+        ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.fill();
+        ctx.beginPath(); ctx.arc(29.5,-0.5,0.5,0,Math.PI*2);
+        ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fill();
+
+        ctx.restore();
+    }
+
+    function loop(){
+        t += 0.038;
+        px += (mx-px) * 0.10;
+        py += (my-py) * 0.10;
+        const dx=mx-px, dy=my-py;
+        if(Math.abs(dx)>0.5 || Math.abs(dy)>0.5) targetAngle = Math.atan2(dy, dx);
+        let da = targetAngle - angle;
+        while(da >  Math.PI) da -= Math.PI*2;
+        while(da < -Math.PI) da += Math.PI*2;
+        angle += da * 0.11;
+        canvas.style.left  = (px-58) + 'px';
+        canvas.style.top   = (py-35) + 'px';
+        canvas.style.transform = `rotate(${angle}rad)`;
+        drawMetallicFish();
+        requestAnimationFrame(loop);
+    }
+
+    document.addEventListener('mousemove', e => {
+        mx = e.clientX; my = e.clientY;
+        canvas.style.display = 'block';
+    });
+
+    loop();
+}
+
+initFishCursor();
 }
