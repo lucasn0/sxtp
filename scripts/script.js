@@ -829,6 +829,7 @@ window.onload = function() {
         const canvas = document.getElementById('fish-game-canvas');
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
+        let gameT = 0;
 
         // — Constants —
         const OBS_W    = 32;    // obstacle column width
@@ -1120,6 +1121,7 @@ window.onload = function() {
         // — Game loop —
         function gameLoop() {
             resize();
+            gameT += 0.038;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // Start screen
