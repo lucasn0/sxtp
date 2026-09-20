@@ -1,3 +1,6 @@
 *.webm
 structure.jpg
 /images/cursor
+# WSL/Windows strays that land next to downloaded assets
+*:Zone.Identifier
+*~RF*.TMP

@@ -1,13 +1,17 @@
 window.onload = function() {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     // Random Glitch Effects
     function createGlitch() {
+        if (reducedMotion.matches) return;
+        const surface = document.querySelector(".photo");
+        if (!surface) return;
         const glitchColors = [
             '#ff00ff', '#00ffff', '#ff0000', '#00ff00', 
             '#ffff00', '#0000ff', '#ffffff', '#000000'
         ];
         
         // Create 3-8 random glitch squares
-        const glitchCount = Math.floor(Math.random() * 6) + 3;
+        const glitchCount = 1;
         
         for (let i = 0; i < glitchCount; i++) {
             const glitch = document.createElement('div');
@@ -28,7 +32,7 @@ window.onload = function() {
             // Random opacity
             glitch.style.opacity = Math.random() * 0.5 + 0.5;
             
-            document.body.appendChild(glitch);
+            surface.appendChild(glitch);
             
             // Remove after animation
             setTimeout(() => {
@@ -42,12 +46,12 @@ window.onload = function() {
         const delay = Math.floor(Math.random() * 5000) + 3000; // 3-8 seconds
         setTimeout(() => {
             createGlitch();
-            scheduleNextGlitch();
+            if (!reducedMotion.matches) scheduleNextGlitch();
         }, delay);
     }
     
     // Start glitch effects
-    scheduleNextGlitch();
+    if (!reducedMotion.matches) scheduleNextGlitch();
 
     // Visit Counter functionality
     const counterValue = document.getElementById('counter-value');
@@ -74,28 +78,42 @@ window.onload = function() {
     }
 
     // Sidebar video cycling functionality
-    const sidebarVideo = document.querySelector('.sidebar-img');
-    const videoOverlay = document.querySelector('.video-overlay');
+    const sidebarVideo = document.querySelector('.tv video');
+    const videoOverlay = document.querySelector('.tv__toggle');
+    // The files are named with spaces, so the paths stay percent-encoded.
     const videos = [
-        'images/vids-gifs/camara-3.mp4',
-        'images/vids-gifs/camara-4.mp4',
-        'images/vids-gifs/camara-5.mp4',
-        'images/vids-gifs/camara-7.mp4'
+        'images/vids-gifs/VID%20WEB%201.mp4',
+        'images/vids-gifs/VID%20WEB%202.mp4',
+        'images/vids-gifs/VID%20WEB%203.mp4',
+        'images/vids-gifs/VID%20WEB%204.mp4',
+        'images/vids-gifs/VID%20WEB%205.mp4'
     ];
-    
+    const videoNote = document.querySelector('.panel--tv .panel__note');
+
     let currentVideoIndex = Math.floor(Math.random() * videos.length);
-    
+
+    // Point the player at the current clip and keep the panel label honest.
+    const loadVideo = () => {
+        sidebarVideo.src = videos[currentVideoIndex];
+        if (videoNote) videoNote.textContent = `vid ${currentVideoIndex + 1}`;
+    };
+
     // Function to cycle to next video
     const cycleVideo = () => {
         currentVideoIndex = (currentVideoIndex + 1) % videos.length;
-        sidebarVideo.src = videos[currentVideoIndex];
-        sidebarVideo.play();
+        loadVideo();
+        sidebarVideo.play().catch(() => {});
     };
     
     if (sidebarVideo) {
         // Set initial random video
-        sidebarVideo.src = videos[currentVideoIndex];
-        
+        loadVideo();
+
+        if (!reducedMotion.matches) sidebarVideo.play().catch(() => {});
+        reducedMotion.addEventListener("change", () => { if (reducedMotion.matches) sidebarVideo.pause(); });
+        sidebarVideo.addEventListener("play", () => { videoOverlay.textContent = "Ⅱ"; videoOverlay.setAttribute("aria-label", "Pausar video"); });
+        sidebarVideo.addEventListener("pause", () => { videoOverlay.textContent = "▶"; videoOverlay.setAttribute("aria-label", "Reproducir video"); });
+        if (reducedMotion.matches) { videoOverlay.textContent = "▶"; videoOverlay.setAttribute("aria-label", "Reproducir video"); }
         // Add click listener to video
         sidebarVideo.addEventListener('click', cycleVideo);
         
@@ -105,7 +123,10 @@ window.onload = function() {
     
     if (videoOverlay) {
         // Add click listener to overlay button
-        videoOverlay.addEventListener('click', cycleVideo);
+        videoOverlay.addEventListener('click', () => {
+            if (sidebarVideo.paused) sidebarVideo.play().catch(() => {});
+            else sidebarVideo.pause();
+        });
         
         // Add hover cursor style
         videoOverlay.style.cursor = 'pointer';
@@ -181,13 +202,63 @@ window.onload = function() {
                     createSharePopup();
                 } catch (err) {
                     console.log('Error copying to clipboard:', err);
-                    createSharePopup(); // Show popup anyway
+                    createSharePopup(false);
                 }
             }
         });
     }
 
-    function createSharePopup() {
+    function setupPopup(popup) {
+        const trigger = document.activeElement;
+        const titlebar = popup.querySelector('.popup-titlebar');
+        const close = popup.querySelector('.popup-close');
+        popup.setAttribute('role', 'dialog');
+        popup.setAttribute('aria-label', popup.querySelector('.popup-title').textContent);
+        const place = (x, y) => {
+            const width = document.documentElement.clientWidth;
+            const height = window.innerHeight;
+            popup.style.left = Math.max(16, Math.min(x, width - popup.offsetWidth - 16)) + 'px';
+            popup.style.top = Math.max(16, Math.min(y, height - popup.offsetHeight - 16)) + 'px';
+        };
+        const fit = () => place(parseFloat(popup.style.left) || 16, parseFloat(popup.style.top) || 16);
+        fit();
+        const observer = new ResizeObserver(fit);
+        observer.observe(popup);
+        window.addEventListener('resize', fit);
+        let drag = null;
+        titlebar.addEventListener('pointerdown', event => {
+            if (event.target.closest('button') || event.button !== 0) return;
+            event.preventDefault();
+            close.focus({ preventScroll: true });
+            const rect = popup.getBoundingClientRect();
+            drag = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+            titlebar.setPointerCapture(event.pointerId);
+        });
+        titlebar.addEventListener('pointermove', event => {
+            if (drag) place(event.clientX - drag.x, event.clientY - drag.y);
+        });
+        titlebar.addEventListener('pointerup', () => { drag = null; });
+        titlebar.addEventListener('pointercancel', () => { drag = null; });
+        const dismiss = () => {
+            observer.disconnect();
+            window.removeEventListener('resize', fit);
+            popup.remove();
+            const remaining = document.querySelectorAll('.popup-window');
+            if (remaining.length) remaining[remaining.length - 1].querySelector('.popup-close').focus();
+            else if (trigger && trigger.isConnected) trigger.focus();
+        };
+        close.addEventListener('click', dismiss);
+        popup.addEventListener('keydown', event => {
+            if (event.key === 'Escape') { event.stopPropagation(); dismiss(); }
+        });
+        popup.addEventListener('pointerdown', () => {
+            document.querySelectorAll('.popup-window').forEach(p => p.style.zIndex = '10000');
+            popup.style.zIndex = '10001';
+        });
+        close.focus({ preventScroll: true });
+    }
+
+    function createSharePopup(copied = true) {
         const popup = document.createElement('div');
         popup.className = 'popup-window';
         
@@ -203,104 +274,16 @@ window.onload = function() {
         popup.innerHTML = `
             <div class="popup-titlebar">
                 <div class="popup-title">COMPARTIR</div>
-                <div class="popup-close">X</div>
+                <button type="button" class="popup-close" aria-label="Cerrar">X</button>
             </div>
             <div class="popup-content" style="padding: 20px; text-align: center;">
-                <p style="color: #00ff00; font-size: 16px; font-weight: bold;">LINK COPIADO!</p>
+                <p style="color: #000; font-size: 16px; font-weight: bold;">${copied ? "LINK COPIADO!" : "No se pudo copiar. Copiá la dirección de esta página."}</p>
             </div>
         `;
 
         document.body.appendChild(popup);
 
-        // Make draggable
-        const titlebar = popup.querySelector('.popup-titlebar');
-        let isDragging = false;
-        let currentX = baseX;
-        let currentY = baseY;
-        let initialX, initialY;
-        let xOffset = baseX;
-        let yOffset = baseY;
-
-        // Mouse events for desktop
-        titlebar.addEventListener('mousedown', dragStart);
-        document.addEventListener('mousemove', drag);
-        document.addEventListener('mouseup', dragEnd);
-
-        // Touch events for mobile
-        titlebar.addEventListener('touchstart', touchStart, { passive: false });
-        document.addEventListener('touchmove', touchDrag, { passive: false });
-        document.addEventListener('touchend', touchEnd);
-
-        function dragStart(e) {
-            initialX = e.clientX - xOffset;
-            initialY = e.clientY - yOffset;
-
-            if (e.target === titlebar || e.target.classList.contains('popup-title')) {
-                isDragging = true;
-            }
-        }
-
-        function drag(e) {
-            if (isDragging) {
-                e.preventDefault();
-                currentX = e.clientX - initialX;
-                currentY = e.clientY - initialY;
-                xOffset = currentX;
-                yOffset = currentY;
-
-                popup.style.left = currentX + 'px';
-                popup.style.top = currentY + 'px';
-            }
-        }
-
-        function dragEnd(e) {
-            initialX = currentX;
-            initialY = currentY;
-            isDragging = false;
-        }
-
-        function touchStart(e) {
-            if (e.target === titlebar || e.target.classList.contains('popup-title')) {
-                const touch = e.touches[0];
-                initialX = touch.clientX - xOffset;
-                initialY = touch.clientY - yOffset;
-                isDragging = true;
-                e.preventDefault();
-            }
-        }
-
-        function touchDrag(e) {
-            if (isDragging) {
-                e.preventDefault();
-                const touch = e.touches[0];
-                currentX = touch.clientX - initialX;
-                currentY = touch.clientY - initialY;
-                xOffset = currentX;
-                yOffset = currentY;
-
-                popup.style.left = currentX + 'px';
-                popup.style.top = currentY + 'px';
-            }
-        }
-
-        function touchEnd(e) {
-            initialX = currentX;
-            initialY = currentY;
-            isDragging = false;
-        }
-
-        // Close button
-        const closeBtn = popup.querySelector('.popup-close');
-        closeBtn.addEventListener('click', () => {
-            popup.remove();
-        });
-
-        // Bring to front on click
-        popup.addEventListener('mousedown', () => {
-            const allPopups = document.querySelectorAll('.popup-window');
-            allPopups.forEach(p => p.style.zIndex = '10000');
-            popup.style.zIndex = '10001';
-        });
+        setupPopup(popup);
     }
 
     // DESCARGAR button - Create download pop-up
@@ -327,7 +310,7 @@ window.onload = function() {
         popup.innerHTML = `
             <div class="popup-titlebar">
                 <div class="popup-title">DEMOS</div>
-                <div class="popup-close">X</div>
+                <button type="button" class="popup-close" aria-label="Cerrar">X</button>
             </div>
             <div class="popup-content">
                 <div class="popup-buttons">
@@ -340,95 +323,7 @@ window.onload = function() {
 
         document.body.appendChild(popup);
 
-        // Make draggable
-        const titlebar = popup.querySelector('.popup-titlebar');
-        let isDragging = false;
-        let currentX = baseX;
-        let currentY = baseY;
-        let initialX, initialY;
-        let xOffset = baseX;
-        let yOffset = baseY;
-
-        // Mouse events for desktop
-        titlebar.addEventListener('mousedown', dragStart);
-        document.addEventListener('mousemove', drag);
-        document.addEventListener('mouseup', dragEnd);
-
-        // Touch events for mobile
-        titlebar.addEventListener('touchstart', touchStart, { passive: false });
-        document.addEventListener('touchmove', touchDrag, { passive: false });
-        document.addEventListener('touchend', touchEnd);
-
-        function dragStart(e) {
-            initialX = e.clientX - xOffset;
-            initialY = e.clientY - yOffset;
-
-            if (e.target === titlebar || e.target.classList.contains('popup-title')) {
-                isDragging = true;
-            }
-        }
-
-        function drag(e) {
-            if (isDragging) {
-                e.preventDefault();
-                currentX = e.clientX - initialX;
-                currentY = e.clientY - initialY;
-                xOffset = currentX;
-                yOffset = currentY;
-
-                popup.style.left = currentX + 'px';
-                popup.style.top = currentY + 'px';
-            }
-        }
-
-        function dragEnd(e) {
-            initialX = currentX;
-            initialY = currentY;
-            isDragging = false;
-        }
-
-        function touchStart(e) {
-            if (e.target === titlebar || e.target.classList.contains('popup-title')) {
-                const touch = e.touches[0];
-                initialX = touch.clientX - xOffset;
-                initialY = touch.clientY - yOffset;
-                isDragging = true;
-                e.preventDefault();
-            }
-        }
-
-        function touchDrag(e) {
-            if (isDragging) {
-                e.preventDefault();
-                const touch = e.touches[0];
-                currentX = touch.clientX - initialX;
-                currentY = touch.clientY - initialY;
-                xOffset = currentX;
-                yOffset = currentY;
-
-                popup.style.left = currentX + 'px';
-                popup.style.top = currentY + 'px';
-            }
-        }
-
-        function touchEnd(e) {
-            initialX = currentX;
-            initialY = currentY;
-            isDragging = false;
-        }
-
-        // Close button
-        const closeBtn = popup.querySelector('.popup-close');
-        closeBtn.addEventListener('click', () => {
-            popup.remove();
-        });
-
-        // Bring to front on click
-        popup.addEventListener('mousedown', () => {
-            const allPopups = document.querySelectorAll('.popup-window');
-            allPopups.forEach(p => p.style.zIndex = '10000');
-            popup.style.zIndex = '10001';
-        });
+        setupPopup(popup);
     }
 
     // ESCUCHAR button - Create pop-up windows
@@ -498,7 +393,7 @@ window.onload = function() {
         popup.innerHTML = `
             <div class="popup-titlebar">
                 <div class="popup-title">${data.title}</div>
-                <div class="popup-close">X</div>
+                <button type="button" class="popup-close" aria-label="Cerrar">X</button>
             </div>
             <div class="popup-content">
                 <img src="${imageSrc}" alt="popup image">
@@ -511,96 +406,7 @@ window.onload = function() {
 
         document.body.appendChild(popup);
 
-        // Make draggable
-        const titlebar = popup.querySelector('.popup-titlebar');
-        let isDragging = false;
-        let currentX = baseX;
-        let currentY = baseY;
-        let initialX, initialY;
-        let xOffset = baseX;
-        let yOffset = baseY;
-
-        // Mouse events for desktop
-        titlebar.addEventListener('mousedown', dragStart);
-        document.addEventListener('mousemove', drag);
-        document.addEventListener('mouseup', dragEnd);
-
-        // Touch events for mobile
-        titlebar.addEventListener('touchstart', touchStart, { passive: false });
-        document.addEventListener('touchmove', touchDrag, { passive: false });
-        document.addEventListener('touchend', touchEnd);
-
-        function dragStart(e) {
-            initialX = e.clientX - xOffset;
-            initialY = e.clientY - yOffset;
-
-            if (e.target === titlebar || e.target.classList.contains('popup-title')) {
-                isDragging = true;
-            }
-        }
-
-        function drag(e) {
-            if (isDragging) {
-                e.preventDefault();
-                currentX = e.clientX - initialX;
-                currentY = e.clientY - initialY;
-                xOffset = currentX;
-                yOffset = currentY;
-
-                popup.style.left = currentX + 'px';
-                popup.style.top = currentY + 'px';
-            }
-        }
-
-        function dragEnd(e) {
-            initialX = currentX;
-            initialY = currentY;
-            isDragging = false;
-        }
-
-        // Touch event handlers
-        function touchStart(e) {
-            if (e.target === titlebar || e.target.classList.contains('popup-title')) {
-                const touch = e.touches[0];
-                initialX = touch.clientX - xOffset;
-                initialY = touch.clientY - yOffset;
-                isDragging = true;
-                e.preventDefault();
-            }
-        }
-
-        function touchDrag(e) {
-            if (isDragging) {
-                e.preventDefault();
-                const touch = e.touches[0];
-                currentX = touch.clientX - initialX;
-                currentY = touch.clientY - initialY;
-                xOffset = currentX;
-                yOffset = currentY;
-
-                popup.style.left = currentX + 'px';
-                popup.style.top = currentY + 'px';
-            }
-        }
-
-        function touchEnd(e) {
-            initialX = currentX;
-            initialY = currentY;
-            isDragging = false;
-        }
-
-        // Close button
-        const closeBtn = popup.querySelector('.popup-close');
-        closeBtn.addEventListener('click', () => {
-            popup.remove();
-        });
-
-        // Bring to front on click
-        popup.addEventListener('mousedown', () => {
-            const allPopups = document.querySelectorAll('.popup-window');
-            allPopups.forEach(p => p.style.zIndex = '10000');
-            popup.style.zIndex = '10001';
-        });
+        setupPopup(popup);
     }
 
     // Audio player functionality
@@ -623,22 +429,23 @@ window.onload = function() {
             });
         }
         
-        playButton.addEventListener('click', function(e) {
+        playButton.addEventListener('click', async function(e) {
             e.stopPropagation(); // Prevent default nav-link behavior
             
             if (audioPlayer.paused) {
-                audioPlayer.play();
+                try { await audioPlayer.play(); }
+                catch { playButton.textContent = "reintentar"; return; }
                 playButton.textContent = 'pause';
                 // Show volume control when playing (only on desktop via CSS)
                 if (volumeControl) {
-                    volumeControl.classList.add('visible');
+                    volumeControl.classList.add('is-visible');
                 }
             } else {
                 audioPlayer.pause();
                 playButton.textContent = 'play!';
                 // Hide volume control when paused
                 if (volumeControl) {
-                    volumeControl.classList.remove('visible');
+                    volumeControl.classList.remove('is-visible');
                 }
             }
         });
@@ -647,7 +454,7 @@ window.onload = function() {
         audioPlayer.addEventListener('ended', function() {
             playButton.textContent = 'play!';
             if (volumeControl) {
-                volumeControl.classList.remove('visible');
+                volumeControl.classList.remove('is-visible');
             }
         });
     }
@@ -673,7 +480,7 @@ window.onload = function() {
     });
 
     // Control icons interaction
-    const controlIcons = document.querySelectorAll('.control-icon');
+    const controlIcons = document.querySelectorAll('.link-row');
     controlIcons.forEach(icon => {
         icon.addEventListener('click', function() {
             const text = this.textContent;
@@ -697,7 +504,7 @@ window.onload = function() {
     const draggableBlocks = document.querySelectorAll('.draggable-block');
     
     // Check if device is mobile (screen width < 900px for desktop breakpoint)
-    const isMobile = () => window.innerWidth < 900;
+    const isMobile = () => window.innerWidth < 900 || window.matchMedia("(pointer: coarse)").matches;
     
     draggableBlocks.forEach(block => {
         let isDragging = false;
@@ -721,7 +528,8 @@ window.onload = function() {
             const rect = this.getBoundingClientRect();
             originalRect = {
                 top: rect.top,
-                left: rect.left
+                left: rect.left,
+                right: rect.right
             };
             
             initialX = currentX;
@@ -739,10 +547,11 @@ window.onload = function() {
             const deltaX = e.clientX - startX;
             const deltaY = e.clientY - startY;
             
-            currentX = initialX + deltaX;
+            currentX = Math.max(-originalRect.left, Math.min(initialX + deltaX, document.documentElement.clientWidth - originalRect.right));
             currentY = initialY + deltaY;
             
-            block.style.transform = `translate(${currentX}px, ${currentY}px)`;
+            // `translate` (not `transform`) so a dragged photo keeps its .tilt-* rotation.
+            block.style.translate = `${currentX}px ${currentY}px`;
         });
 
         document.addEventListener('mouseup', function() {
@@ -753,7 +562,7 @@ window.onload = function() {
             block.classList.add('returning');
             
             // Return to original position
-            block.style.transform = 'translate(0, 0)';
+            block.style.translate = '0px 0px';
             currentX = 0;
             currentY = 0;
             
@@ -764,64 +573,6 @@ window.onload = function() {
             }, 600);
         });
 
-        // Touch events for mobile - disabled for dragging (click-to-expand still works)
-        block.addEventListener('touchstart', function(e) {
-            // Disable dragging on mobile, but allow click-to-expand
-            return;
-            const touch = e.touches[0];
-            isDragging = true;
-            startX = touch.clientX;
-            startY = touch.clientY;
-            
-            const rect = this.getBoundingClientRect();
-            originalRect = {
-                top: rect.top,
-                left: rect.left
-            };
-            
-            initialX = currentX;
-            initialY = currentY;
-            
-            this.classList.add('dragging');
-            this.style.zIndex = '1000';
-        });
-
-        document.addEventListener('touchmove', function(e) {
-            // Disabled for mobile
-            return;
-            if (!isDragging) return;
-            
-            e.preventDefault();
-            
-            const touch = e.touches[0];
-            const deltaX = touch.clientX - startX;
-            const deltaY = touch.clientY - startY;
-            
-            currentX = initialX + deltaX;
-            currentY = initialY + deltaY;
-            
-            block.style.transform = `translate(${currentX}px, ${currentY}px)`;
-        }, { passive: false });
-
-        document.addEventListener('touchend', function() {
-            // Disabled for mobile
-            return;
-            if (!isDragging) return;
-
-            isDragging = false;
-            block.classList.remove('dragging');
-            block.classList.add('returning');
-
-            // Return to original position
-            block.style.transform = 'translate(0, 0)';
-            currentX = 0;
-            currentY = 0;
-
-            setTimeout(() => {
-                block.classList.remove('returning');
-                block.style.zIndex = '';
-            }, 600);
-        });
     });
 
     // ===== FISH GAME — Flappy Bird style =====
@@ -830,6 +581,13 @@ window.onload = function() {
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
         let gameT = 0;
+        let gameFrame = null;
+        function requestGameFrame() {
+            if (gameFrame === null && (!reducedMotion.matches || gameRunning || isDead)) {
+                gameFrame = requestAnimationFrame(gameLoop);
+            }
+        }
+        reducedMotion.addEventListener("change", requestGameFrame);
 
         // — Constants —
         const OBS_W    = 32;    // obstacle column width
@@ -851,14 +609,18 @@ window.onload = function() {
 
         // — Canvas sizing —
         function resize() {
-            const box = canvas.parentElement;
-            canvas.width  = box.offsetWidth;
-            canvas.height = box.offsetHeight || 180;
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+            if (canvas.width !== width) canvas.width = width;
+            if (canvas.height !== height) canvas.height = height;
         }
         resize();
         window.addEventListener('resize', function() {
             resize();
-            if (!gameRunning && !isDead) resetFish();
+            if (!gameRunning && !isDead) {
+                resetFish();
+                if (gameFrame === null) gameLoop();
+            }
         });
 
         // Gap size scales with canvas height
@@ -894,6 +656,7 @@ window.onload = function() {
             score       = 0;
             speed       = 2.5;
             obsTimer    = 80;   // start close to first spawn so obstacles appear quickly
+            requestGameFrame();
             obsInterval = 100;  // interval between subsequent pairs
             obstacles   = [];
             resetFish();
@@ -1120,6 +883,7 @@ window.onload = function() {
 
         // — Game loop —
         function gameLoop() {
+            gameFrame = null;
             resize();
             gameT += 0.038;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1128,12 +892,12 @@ window.onload = function() {
             if (!gameRunning && !isDead) {
                 ctx.fillStyle = 'rgba(0,0,0,0.68)';
                 ctx.textAlign = 'center';
-                ctx.font = 'bold ' + Math.min(20, Math.floor(canvas.width / 26)) + 'px "Courier New"';
+                ctx.font = 'bold ' + Math.min(20, Math.floor(canvas.width / 17)) + 'px "Courier New"';
                 ctx.fillText('ESPACIO / TAP PARA JUGAR', canvas.width / 2, canvas.height / 2 - 14);
-                ctx.font = 'bold ' + Math.min(15, Math.floor(canvas.width / 36)) + 'px "Courier New"';
+                ctx.font = 'bold ' + Math.min(15, Math.floor(canvas.width / 20)) + 'px "Courier New"';
                 ctx.fillText('esquivá los anzuelos', canvas.width / 2, canvas.height / 2 + 14);
                 drawFish(false);
-                requestAnimationFrame(gameLoop);
+                requestGameFrame();
                 return;
             }
 
@@ -1146,10 +910,10 @@ window.onload = function() {
                 ctx.textAlign = 'center';
                 ctx.font = 'bold ' + Math.min(22, Math.floor(canvas.width / 22)) + 'px "Courier New"';
                 ctx.fillText('ATRAPADO!  score: ' + score, canvas.width / 2, canvas.height / 2 - 10);
-                ctx.font = 'bold ' + Math.min(15, Math.floor(canvas.width / 36)) + 'px "Courier New"';
+                ctx.font = 'bold ' + Math.min(15, Math.floor(canvas.width / 20)) + 'px "Courier New"';
                 ctx.fillText('tap / espacio para volver', canvas.width / 2, canvas.height / 2 + 16);
                 if (deathTimer > 80) { isDead = false; resetFish(); }
-                requestAnimationFrame(gameLoop);
+                requestGameFrame();
                 return;
             }
 
@@ -1160,7 +924,7 @@ window.onload = function() {
             // Wall collision → die
             if (fish.y <= 0 || fish.y + fish.h >= canvas.height) {
                 isDead = true; deathTimer = 0; gameRunning = false;
-                requestAnimationFrame(gameLoop);
+                requestGameFrame();
                 return;
             }
 
@@ -1188,7 +952,7 @@ window.onload = function() {
 
             if (killed) {
                 isDead = true; deathTimer = 0; gameRunning = false;
-                requestAnimationFrame(gameLoop);
+                requestGameFrame();
                 return;
             }
 
@@ -1198,14 +962,14 @@ window.onload = function() {
             // Score display
             ctx.fillStyle = 'rgba(0,0,0,0.58)';
             ctx.textAlign = 'left';
-            ctx.font = 'bold ' + Math.min(18, Math.floor(canvas.width / 30)) + 'px "Courier New"';
+            ctx.font = 'bold ' + Math.min(18, Math.floor(canvas.width / 20)) + 'px "Courier New"';
             ctx.fillText('score: ' + score, 10, 28);
 
-            requestAnimationFrame(gameLoop);
+            requestGameFrame();
         }
 
         // — Input —
-        document.addEventListener('keydown', function(e) {
+        canvas.addEventListener('keydown', function(e) {
             if (e.code === 'Space' || e.code === 'ArrowUp') {
                 const tag = document.activeElement ? document.activeElement.tagName : '';
                 if (tag !== 'INPUT' && tag !== 'TEXTAREA') e.preventDefault();
@@ -1230,11 +994,16 @@ window.onload = function() {
 
     // ===== FISH CURSOR =====
 function initFishCursor() {
+    if (reducedMotion.matches || !window.matchMedia("(pointer: fine)").matches) return;
     const canvas = document.createElement('canvas');
     canvas.width = 140;
     canvas.height = 70;
-    canvas.style.cssText = 'position:fixed;top:0;left:0;pointer-events:none;z-index:999999;display:none';
-    document.body.appendChild(canvas);
+    canvas.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;display:none';
+    const cursorLayer = document.createElement('div');
+    cursorLayer.setAttribute('aria-hidden', 'true');
+    cursorLayer.style.cssText = 'position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:999999;contain:paint';
+    cursorLayer.appendChild(canvas);
+    document.body.appendChild(cursorLayer);
     const ctx = canvas.getContext('2d');
 
     let mx=300, my=300, px=300, py=300, angle=0, targetAngle=0, t=0;
@@ -1407,6 +1176,7 @@ function initFishCursor() {
     }
 
     function loop(){
+        if (reducedMotion.matches) { canvas.style.display = "none"; return; }
         t += 0.038;
         px += (mx-px) * 0.10;
         py += (my-py) * 0.10;
@@ -1425,7 +1195,7 @@ function initFishCursor() {
 
     document.addEventListener('mousemove', e => {
         mx = e.clientX; my = e.clientY;
-        canvas.style.display = 'block';
+        if (!reducedMotion.matches) canvas.style.display = 'block';
     });
 
     loop();

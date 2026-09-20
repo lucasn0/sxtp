@@ -12,135 +12,172 @@
 </head>
 
 <body>
-    <!-- Top Navigation -->
-    <nav class="top-nav">
-        <div class="nav-item" id="logo-container">
-            <a href="../index.html"><div id="logo">sxtp</div></a>
-        </div>
-        <div class="nav-item nav-link" data-section="vision"><a href="gallery.html">gallery</a></div>
-        <div class="nav-item nav-link" data-section="audio"><a href="audio.html">audio</a></div>
-        <div class="nav-item nav-link play-btn" data-section="play">play!</div>
-        <div class="nav-item volume-control">
-            <span class="volume-label">vol:</span>
-            <input type="range" id="volume-slider" min="0" max="100" value="60" class="retro-slider">
-            <span id="volume-display" class="volume-value">100%</span>
-        </div>
-        <div class="nav-item timestamp">
-            <span id="live-time"></span>
-        </div>
-    </nav>
+    <div class="page" data-bg="beam">
 
-    <!-- Gallery Content -->
-    <main class="gallery-container">
-        <h1 class="gallery-title">GALLERY</h1>
-        <div class="loading-indicator" id="loading-indicator">
-            <span class="loading-text">LOADING<span class="loading-dots"></span></span>
-        </div>
-        <div class="gallery-grid" id="gallery-grid" style="display: none;">
-            <!-- Images will be loaded dynamically -->
-        </div>
-    </main>
+        <!-- Top Navigation -->
+        <nav class="top-nav">
+            <a class="nav-logo wordmark" href="../index.html">sxtp</a>
+            <a class="nav-link" href="gallery.html" data-section="vision" aria-current="page">gallery</a>
+            <a class="nav-link" href="audio.html" data-section="audio">audio</a>
+            <button type="button" class="nav-link nav-link--play play-btn" data-section="play">play!</button>
+            <div class="volume-control">
+                <label class="volume-label" for="volume-slider">vol:</label>
+                <input class="retro-slider" id="volume-slider" type="range" min="0" max="100" value="60">
+                <span class="volume-value" id="volume-display">60%</span>
+            </div>
+            <span class="timestamp" id="live-time"></span>
+        </nav>
 
-    <!-- News Ticker Footer -->
-    <footer class="news-footer">
-        <a class="ticker" href="https://www.passline.com/eventos/tarea-fina-en-tucuman">
-            ★★★ NUEVO EP DISPONIBLE ★★★ MDQ 30/01 ENTRADAS ACÁ ★★★ METAL VIOLADO ★★★ 
-        </a>
-    </footer>
+        <header class="page-head">
+            <h1 class="page-title wordmark">gallery</h1>
+            <span class="page-sub">10 fotos</span>
+        </header>
 
-    <audio id="audio-player" src="../audio/sexo-debil.mp3" preload="auto"></audio>
+        <!-- Gallery Content -->
+        <main class="gallery-container">
+            <!--
+                Each photo is listed here on purpose: a static host has no directory
+                listing, so probing for filenames at runtime only guesses. To add one,
+                drop the file in images/gallery/ and copy a block below, keeping the
+                real file extension, the image's own width/height, and the next number.
+            -->
+            <div class="gallery-grid" id="gallery-grid">
+                <a class="gallery-item gallery-item--art grain" href="../images/gallery/1.jpg">
+                    <img src="../images/gallery/1.jpg" width="899" height="1599"
+                         alt="Pantalla de computadora con el flyer naranja de PIZZTAPE: 17 abr, Moscú, 20:00hs">
+                    <span class="gallery-item__no">01</span>
+                </a>
+                <a class="gallery-item grain" href="../images/gallery/2.jpeg">
+                    <img src="../images/gallery/2.jpeg" width="1334" height="750"
+                         alt="Foto en blanco y negro de la banda de noche en una terraza, algunos sentados en la baranda">
+                    <span class="gallery-item__no">02</span>
+                </a>
+                <a class="gallery-item grain" href="../images/gallery/3.jpeg">
+                    <img src="../images/gallery/3.jpeg" width="750" height="1334"
+                         alt="Dos integrantes muestran sus tatuajes de ángeles en el brazo">
+                    <span class="gallery-item__no">03</span>
+                </a>
+                <a class="gallery-item gallery-item--art grain" href="../images/gallery/4.jpeg">
+                    <img src="../images/gallery/4.jpeg" width="1080" height="1350" loading="lazy" decoding="async"
+                         alt="Flyer azul con peces: SXTP despide sextape, 4 de septiembre en El Portal, gratis">
+                    <span class="gallery-item__no">04</span>
+                </a>
+                <a class="gallery-item grain" href="../images/gallery/5.jpeg">
+                    <img src="../images/gallery/5.jpeg" width="1600" height="1066" loading="lazy" decoding="async"
+                         alt="Show en vivo en blanco y negro: guitarra, micrófono y el público encima del escenario">
+                    <span class="gallery-item__no">05</span>
+                </a>
+                <a class="gallery-item gallery-item--art grain" href="../images/gallery/6.jpeg">
+                    <img src="../images/gallery/6.jpeg" width="1080" height="1080" loading="lazy" decoding="async"
+                         alt="Arte verde tramado con el logo sxtp y la frase «poderoso dolor humano»">
+                    <span class="gallery-item__no">06</span>
+                </a>
+                <a class="gallery-item grain" href="../images/gallery/7.jpeg">
+                    <img src="../images/gallery/7.jpeg" width="1600" height="1066" loading="lazy" decoding="async"
+                         alt="El bajista tocando frente al micrófono, con flash">
+                    <span class="gallery-item__no">07</span>
+                </a>
+                <a class="gallery-item grain" href="../images/gallery/8.jpeg">
+                    <img src="../images/gallery/8.jpeg" width="1200" height="1600" loading="lazy" decoding="async"
+                         alt="Dos integrantes posando con una lata después del show">
+                    <span class="gallery-item__no">08</span>
+                </a>
+                <a class="gallery-item gallery-item--art grain" href="../images/gallery/9.jpeg">
+                    <img src="../images/gallery/9.jpeg" width="822" height="1049" loading="lazy" decoding="async"
+                         alt="Tapa en blanco y negro: SEXTAPE — LOS RUIDOS DE LA HUMANIDAD">
+                    <span class="gallery-item__no">09</span>
+                </a>
+                <a class="gallery-item grain" href="../images/gallery/10.jpeg">
+                    <img src="../images/gallery/10.jpeg" width="1600" height="1066" loading="lazy" decoding="async"
+                         alt="La banda y amigos en el camarín, con las paredes escritas">
+                    <span class="gallery-item__no">10</span>
+                </a>
+            </div>
+        </main>
+
+        <!-- News strip -->
+        <footer class="news-footer">
+            <p class="news-strip">
+                <span class="star">★★★</span>
+                <span>nuevo ep disponible</span>
+                <span class="star">★★★</span>
+                <a href="https://www.passline.com/eventos/tarea-fina-en-tucuman">mdq 30/01 entradas acá</a>
+                <span class="star">★★★</span>
+                <span>metal violado</span>
+                <span class="star">★★★</span>
+            </p>
+        </footer>
+
+    </div>
+
+    <audio id="audio-player" src="../audio/sexo-debil.mp3" preload="none"></audio>
 
     <script src="../scripts/script.js"></script>
     <script>
-        // Dynamically load all images from gallery folder
-        const galleryGrid = document.getElementById('gallery-grid');
-        const loadingIndicator = document.getElementById('loading-indicator');
-        
-        // Function to attempt loading images by number
-        async function loadGalleryImages() {
-            const loadedImages = [];
-            let imageNumber = 1;
-            let consecutiveFails = 0;
-            
-            // Try to load images from 1 to 100 (or until we hit 5 consecutive failures)
-            while (consecutiveFails < 5 && imageNumber <= 100) {
-                const imagePath = `../images/gallery/${imageNumber}.jpg`;
-                
-                try {
-                    // Try to load the image
-                    const response = await fetch(imagePath, { method: 'HEAD' });
-                    
-                    if (response.ok) {
-                        loadedImages.push(imageNumber);
-                        consecutiveFails = 0;
-                    } else {
-                        consecutiveFails++;
-                    }
-                } catch (error) {
-                    consecutiveFails++;
-                }
-                
-                imageNumber++;
-            }
-            
-            // Create gallery items for all found images
-            loadedImages.forEach(num => {
-                const galleryItem = document.createElement('div');
-                galleryItem.className = 'gallery-item';
-                
-                const img = document.createElement('img');
-                img.src = `../images/gallery/${num}.jpg`;
-                img.alt = `gallery image ${num}`;
-                
-                galleryItem.appendChild(img);
-                galleryGrid.appendChild(galleryItem);
+        // The grid is plain markup, so the photos show with or without this script.
+        // Everything below is the enlarged view layered on top of it.
+        (function () {
+            const grid = document.getElementById('gallery-grid');
+            if (!grid) return;
+
+            grid.querySelectorAll('img').forEach(img => {
+                const markBroken = () => img.closest('.gallery-item').dataset.state = 'error';
+                if (img.complete && img.naturalWidth === 0) markBroken();
+                img.addEventListener('error', markBroken);
             });
-            
-            // Set up fullscreen functionality after images are loaded
-            setupFullscreen();
-            
-            // Hide loading indicator and show gallery
-            loadingIndicator.style.display = 'none';
-            galleryGrid.style.display = 'grid';
-        }
-        
-        function setupFullscreen() {
-            const galleryItems = document.querySelectorAll('.gallery-item img');
-        
-            galleryItems.forEach(img => {
-                img.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    
-                    // Create fullscreen overlay
-                    const fullscreen = document.createElement('div');
-                    fullscreen.className = 'gallery-fullscreen';
-                    
-                    const fullscreenImg = document.createElement('img');
-                    fullscreenImg.src = this.src;
-                    fullscreenImg.alt = this.alt;
-                    
-                    fullscreen.appendChild(fullscreenImg);
-                    document.body.appendChild(fullscreen);
-                    
-                    // Close on click
-                    fullscreen.addEventListener('click', function() {
-                        fullscreen.remove();
-                    });
-                    
-                    // Close on ESC key
-                    const escHandler = function(e) {
-                        if (e.key === 'Escape') {
-                            fullscreen.remove();
-                            document.removeEventListener('keydown', escHandler);
-                        }
-                    };
-                    document.addEventListener('keydown', escHandler);
+
+            grid.addEventListener('click', event => {
+                // Let the browser handle open-in-new-tab and non-primary clicks.
+                if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                const item = event.target.closest('.gallery-item');
+                if (!item || item.dataset.state === 'error') return;
+                event.preventDefault();
+                openFullscreen(item);
+            });
+
+            function openFullscreen(item) {
+                const thumbnail = item.querySelector('img');
+
+                const overlay = document.createElement('div');
+                overlay.className = 'gallery-fullscreen';
+                overlay.setAttribute('role', 'dialog');
+                overlay.setAttribute('aria-modal', 'true');
+                overlay.setAttribute('aria-label', thumbnail.alt || 'Imagen ampliada');
+
+                const full = document.createElement('img');
+                full.src = item.getAttribute('href');
+                full.alt = thumbnail.alt;
+
+                const close = document.createElement('button');
+                close.type = 'button';
+                close.className = 'gallery-close';
+                close.textContent = 'X';
+                close.setAttribute('aria-label', 'Cerrar imagen');
+
+                overlay.append(full, close);
+                document.body.appendChild(overlay);
+
+                const background = [...document.body.children].filter(el => el !== overlay);
+                const previousInert = background.map(el => el.inert);
+                background.forEach(el => el.inert = true);
+                document.documentElement.style.overflow = 'hidden';
+
+                const dismiss = () => {
+                    overlay.remove();
+                    background.forEach((el, i) => el.inert = previousInert[i]);
+                    document.documentElement.style.overflow = '';
+                    item.focus();
+                };
+
+                overlay.addEventListener('click', dismiss);
+                overlay.addEventListener('keydown', event => {
+                    if (event.key === 'Escape') dismiss();
+                    // The close button is the only focusable thing in here, so Tab stays on it.
+                    if (event.key === 'Tab') { event.preventDefault(); close.focus(); }
                 });
-            });
-        }
-        
-        // Load images on page load
-        loadGalleryImages();
+                close.focus();
+            }
+        })();
     </script>
 </body>
 
