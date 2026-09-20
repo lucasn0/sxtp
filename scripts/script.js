@@ -575,418 +575,470 @@ window.onload = function() {
 
     });
 
-    // ===== FISH GAME — Flappy Bird style =====
+    // ===== FISH GAME — flappy-style, sized to its own canvas =====
     function initFishGame() {
         const canvas = document.getElementById('fish-game-canvas');
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
-        let gameT = 0;
-        let gameFrame = null;
+
+        // Playfield in CSS pixels. Everything below is derived from these.
+        let W = 0, H = 0;
+
+        // Physics is expressed per SECOND and as a fraction of the playfield
+        // height. The old constants were per-frame pixel values tuned for a much
+        // taller canvas, so in a 200px panel the fish crossed the whole screen in
+        // about a third of a second — and ran at double speed on a 120Hz display.
+        const GRAVITY_H = 2.6;    // playfield-heights per second squared
+        const FLAP_H    = 1.21;   // upward velocity on a flap, heights per second
+        const MAX_VY_H  = 2.2;    // terminal fall speed, heights per second
+
+        const fish = { x: 0, y: 0, vy: 0, w: 0, h: 0 };
+        let obstacles = [];
+        let bubbles   = [];
+
+        let gameRunning = false;
+        let isDead      = false;
+        let deathTimer  = 0;      // seconds since death
+        let score       = 0;
+        let best        = 0;
+        let speed       = 0;      // px per second
+        let obsTimer    = 0;      // seconds since last spawn
+        let obsInterval = 0;      // seconds between spawns
+        let hookR       = 12;     // hook bend radius
+        let OBS_W       = 28;     // collision width of one hook pair
+        let gameT       = 0;
+        let gameFrame   = null;
+        let lastTime    = 0;
+
         function requestGameFrame() {
             if (gameFrame === null && (!reducedMotion.matches || gameRunning || isDead)) {
                 gameFrame = requestAnimationFrame(gameLoop);
             }
         }
-        reducedMotion.addEventListener("change", requestGameFrame);
+        reducedMotion.addEventListener('change', requestGameFrame);
 
-        // — Constants —
-        const OBS_W    = 32;    // obstacle column width
-        const GRAVITY  = 0.52;  // gravity per frame
-        const FLAP_V   = -10.0; // upward velocity on flap
-        const MAX_VY   = 14;    // terminal fall speed
-
-        // — State —
-        let gameRunning = false;
-        let isDead      = false;
-        let deathTimer  = 0;
-        let score       = 0;
-        let speed       = 2.5;
-        let obsTimer    = 0;
-        let obsInterval = 140;  // frames between obstacle pairs
-
-        const fish = { x: 80, y: 0, vy: 0, w: 44, h: 26 };
-        let obstacles  = [];
-
-        // — Canvas sizing —
+        // — Canvas sizing, device-pixel aware so the outlines stay crisp —
         function resize() {
-            const width = canvas.clientWidth;
-            const height = canvas.clientHeight;
-            if (canvas.width !== width) canvas.width = width;
-            if (canvas.height !== height) canvas.height = height;
-        }
-        resize();
-        window.addEventListener('resize', function() {
-            resize();
-            if (!gameRunning && !isDead) {
-                resetFish();
-                if (gameFrame === null) gameLoop();
-            }
-        });
+            const cw = canvas.clientWidth;
+            const ch = canvas.clientHeight;
+            if (!cw || !ch) return false;
 
-        // Gap size scales with canvas height
-        function gapSize() { return Math.max(80, canvas.height * 0.40); }
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            const pw  = Math.round(cw * dpr);
+            const ph  = Math.round(ch * dpr);
+            if (canvas.width !== pw || canvas.height !== ph) {
+                canvas.width  = pw;
+                canvas.height = ph;
+                bubbles = [];
+            }
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            W = cw;
+            H = ch;
+            fish.h  = Math.max(16, Math.min(30, H * 0.135));
+            fish.w  = fish.h * 1.75;
+            fish.x  = Math.max(22, W * 0.2);
+            hookR   = Math.max(9, Math.min(15, H * 0.062));
+            OBS_W   = hookR * 2 + 4;
+            if (!bubbles.length) seedBubbles();
+            return true;
+        }
+
+        function seedBubbles() {
+            const n = Math.max(5, Math.round(W / 55));
+            for (let i = 0; i < n; i++) {
+                bubbles.push({
+                    x: Math.random() * W,
+                    y: Math.random() * H,
+                    r: 1.5 + Math.random() * 3,
+                    v: 9 + Math.random() * 18,
+                    drift: (Math.random() - 0.5) * 14
+                });
+            }
+        }
+
+        // Scanline tile, the same TV motif the video panel uses.
+        let scanlines = null;
+        (function buildScanlines() {
+            const tile  = document.createElement('canvas');
+            tile.width  = 1;
+            tile.height = 3;
+            const tctx  = tile.getContext('2d');
+            tctx.fillStyle = 'rgba(0,0,0,0.20)';
+            tctx.fillRect(0, 0, 1, 1);
+            scanlines = ctx.createPattern(tile, 'repeat');
+        })();
+
+        // The gap has to clear the fish comfortably on a short playfield.
+        function gapSize() { return Math.max(fish.h * 3.4, H * 0.44); }
 
         function resetFish() {
-            fish.y  = canvas.height / 2 - fish.h / 2;
+            fish.y  = H / 2 - fish.h / 2;
             fish.vy = 0;
         }
-        resetFish();
 
         function spawnObstacle() {
             const gs  = gapSize();
-            const min = gs / 2 + 20;
-            const max = canvas.height - gs / 2 - 20;
+            const min = gs / 2 + H * 0.09;
+            const max = H - gs / 2 - H * 0.09;
             obstacles.push({
-                x:      canvas.width + 10,
-                cy:     min + Math.random() * (max - min),
+                x: W + OBS_W,
+                cy: min + Math.random() * Math.max(1, max - min),
                 passed: false
             });
         }
 
-        // — Flap (works ANY time during play) —
         function flap() {
             if (isDead) return;
             if (!gameRunning) { startGame(); return; }
-            fish.vy = FLAP_V;
+            fish.vy = -FLAP_H * H;
         }
 
         function startGame() {
             gameRunning = true;
             isDead      = false;
             score       = 0;
-            speed       = 2.5;
-            obsTimer    = 80;   // start close to first spawn so obstacles appear quickly
-            requestGameFrame();
-            obsInterval = 100;  // interval between subsequent pairs
+            speed       = W * 0.28;
+            obsInterval = 1.7;
+            obsTimer    = obsInterval - 0.55;   // first hook arrives promptly
             obstacles   = [];
             resetFish();
+            fish.vy     = -FLAP_H * H * 0.6;
+            requestGameFrame();
         }
 
-        // — Draw fish (tilts with velocity) —
-        function drawFish(dead) {
-    const stops = [
-        [255,0,200],[0,230,255],[200,255,0],[255,200,0],[120,0,255],[255,0,200]
-    ];
-    function iridColor(phase, alpha=1){
-        const n = stops.length-1;
-        const pos = ((phase % n) + n) % n;
-        const i = Math.floor(pos), f = pos - i;
-        const a = stops[i], b = stops[(i+1) % stops.length];
-        const r = Math.round(a[0]+(b[0]-a[0])*f);
-        const g = Math.round(a[1]+(b[1]-a[1])*f);
-        const bl= Math.round(a[2]+(b[2]-a[2])*f);
-        if(dead) return `rgba(100,100,110,${alpha})`;
-        return `rgba(${r},${g},${bl},${alpha})`;
-    }
+        function die() {
+            isDead      = true;
+            deathTimer  = 0;
+            gameRunning = false;
+            if (score > best) best = score;
+            requestGameFrame();
+        }
 
-    // t viene del scope de initFishGame — si no existe, crealo arriba del gameLoop
-    const base = (typeof gameT !== 'undefined' ? gameT : 0) * 0.35;
-    const { x, y, w, h } = fish;
-    const cx = x + w/2, cy = y + h/2;
+        // — Water: flat, dark, hard-edged. The fish and the hooks carry the screen. —
+        function drawWater(dt) {
+            ctx.fillStyle = '#03003d';
+            ctx.fillRect(0, 0, W, H);
 
-    ctx.save();
+            const surface = Math.round(H * 0.15);
+            ctx.fillStyle = '#0d0090';
+            ctx.fillRect(0, 0, W, surface);
+            ctx.fillStyle = '#0000ff';
+            ctx.fillRect(0, surface, W, 2);
 
-    // Tilt por velocidad
-    if(!dead){
-        const tilt = Math.max(-0.45, Math.min(0.45, fish.vy * 0.055));
-        ctx.translate(cx, cy);
-        ctx.rotate(tilt);
-        ctx.translate(-cx, -cy);
-    }
-
-    ctx.translate(cx, cy);
-
-    const tw = Math.sin((typeof gameT !== 'undefined' ? gameT : 0) * 3) * 4;
-
-    // Cola — lóbulo superior
-    ctx.beginPath();
-    ctx.moveTo(-w*0.45, 0);
-    ctx.bezierCurveTo(-w*0.6,-3+tw,-w*0.85,-h*0.55+tw,-w*0.8,-h*0.22+tw);
-    ctx.bezierCurveTo(-w*0.75,0,-w*0.55,0,-w*0.45,0);
-    const tg1 = ctx.createLinearGradient(-w*0.85,-h*0.55,-w*0.45,0);
-    tg1.addColorStop(0, iridColor(base+2.5, dead?0.3:0.4));
-    tg1.addColorStop(1, iridColor(base+2.5, dead?0.6:0.9));
-    ctx.fillStyle = tg1; ctx.fill();
-    ctx.strokeStyle = iridColor(base+2.8, 0.5); ctx.lineWidth=0.8; ctx.stroke();
-
-    // Cola — lóbulo inferior
-    ctx.beginPath();
-    ctx.moveTo(-w*0.45, 0);
-    ctx.bezierCurveTo(-w*0.6,3-tw,-w*0.85,h*0.55-tw,-w*0.8,h*0.22-tw);
-    ctx.bezierCurveTo(-w*0.75,0,-w*0.55,0,-w*0.45,0);
-    const tg2 = ctx.createLinearGradient(-w*0.85,h*0.55,-w*0.45,0);
-    tg2.addColorStop(0, iridColor(base+1.8, dead?0.3:0.4));
-    tg2.addColorStop(1, iridColor(base+1.8, dead?0.6:0.9));
-    ctx.fillStyle = tg2; ctx.fill();
-    ctx.strokeStyle = iridColor(base+2.0, 0.5); ctx.lineWidth=0.8; ctx.stroke();
-
-    // Cuerpo
-    if(!dead){ ctx.shadowBlur=8; ctx.shadowColor=iridColor(base,0.3); }
-    ctx.beginPath();
-    ctx.ellipse(0, 0, w*0.5, h*0.5, 0, 0, Math.PI*2);
-    const bodyGrad = ctx.createLinearGradient(-w*0.5,-h*0.5,w*0.5,h*0.5);
-    bodyGrad.addColorStop(0,   iridColor(base+0,   0.95));
-    bodyGrad.addColorStop(0.35,iridColor(base+0.9, 0.85));
-    bodyGrad.addColorStop(0.7, iridColor(base+1.7, 0.90));
-    bodyGrad.addColorStop(1,   iridColor(base+2.5, 0.80));
-    ctx.fillStyle = bodyGrad; ctx.fill();
-    ctx.strokeStyle = iridColor(base+1, 0.85); ctx.lineWidth=1.2; ctx.stroke();
-    ctx.shadowBlur=0;
-
-    // Highlight especular
-    ctx.beginPath();
-    ctx.ellipse(-w*0.05,-h*0.18,w*0.28,h*0.15,-0.1,0,Math.PI*2);
-    const hilite=ctx.createLinearGradient(-w*0.3,-h*0.3,w*0.2,0);
-    hilite.addColorStop(0,'rgba(255,255,255,0)');
-    hilite.addColorStop(0.4,'rgba(255,255,255,0.5)');
-    hilite.addColorStop(1,'rgba(255,255,255,0)');
-    ctx.fillStyle=hilite; ctx.fill();
-
-    // Escamas
-    const scaleRows=[
-        {oy:-0.12,oxs:[-0.32,-0.16,0,0.16],r:h*0.28},
-        {oy: 0.06,oxs:[-0.24,-0.08,0.08,0.22],r:h*0.26},
-        {oy: 0.22,oxs:[-0.18,-0.04,0.1],r:h*0.22},
-    ];
-    scaleRows.forEach((row,ri)=>{
-        row.oxs.forEach((ox,si)=>{
-            const ph=base+ri*0.7+si*0.45;
-            ctx.beginPath();
-            ctx.arc(ox*w, row.oy*h, row.r, Math.PI*1.05, Math.PI*0.05, true);
-            ctx.strokeStyle=iridColor(ph,0.5); ctx.lineWidth=0.7; ctx.stroke();
-        });
-    });
-
-    // Aleta dorsal
-    ctx.beginPath();
-    ctx.moveTo(-w*0.15,-h*0.5);
-    ctx.bezierCurveTo(-w*0.05,-h*1.0,w*0.15,-h*1.1,w*0.35,-h*0.5);
-    ctx.strokeStyle=iridColor(base+1.5,0.7); ctx.lineWidth=0.9; ctx.stroke();
-    for(let i=0;i<4;i++){
-        const f2=i/3;
-        const fx=(-0.15+f2*0.5)*w;
-        const fy=(-0.5-Math.sin(f2*Math.PI)*0.6)*h;
-        ctx.beginPath();
-        ctx.moveTo(fx,-h*0.5); ctx.lineTo(fx, fy);
-        ctx.strokeStyle=iridColor(base+i*0.4,0.25); ctx.lineWidth=0.5; ctx.stroke();
-    }
-
-    // Aleta pectoral
-    ctx.beginPath();
-    ctx.moveTo(w*0.05,h*0.25);
-    ctx.bezierCurveTo(w*0.22,h*0.6,w*0.38,h*0.55,w*0.35,h*0.25);
-    ctx.strokeStyle=iridColor(base+2.2,0.6); ctx.lineWidth=0.8; ctx.stroke();
-
-    // Cabeza
-    ctx.beginPath();
-    ctx.moveTo(w*0.42,-h*0.32);
-    ctx.bezierCurveTo(w*0.62,-h*0.1,w*0.65,h*0.1,w*0.42,h*0.32);
-    ctx.strokeStyle=iridColor(base+0.8,0.75); ctx.lineWidth=1; ctx.stroke();
-
-    // Ojo
-    ctx.shadowBlur=5; ctx.shadowColor=iridColor(base+0.5,0.5);
-    ctx.beginPath(); ctx.arc(w*0.35,-h*0.06,h*0.22,0,Math.PI*2);
-    const eyeGrad=ctx.createRadialGradient(w*0.33,-h*0.1,0.5,w*0.35,-h*0.06,h*0.22);
-    eyeGrad.addColorStop(0,  iridColor(base+1,  0.95));
-    eyeGrad.addColorStop(0.6,iridColor(base+2.5,0.7));
-    eyeGrad.addColorStop(1,  'rgba(0,0,0,0.85)');
-    ctx.fillStyle=eyeGrad; ctx.fill();
-    ctx.strokeStyle=iridColor(base,0.8); ctx.lineWidth=0.7; ctx.stroke();
-    ctx.shadowBlur=0;
-    // Pupila
-    ctx.beginPath(); ctx.arc(w*0.36,-h*0.06,h*0.1,0,Math.PI*2);
-    ctx.fillStyle='rgba(0,0,0,0.9)'; ctx.fill();
-    // Brillos
-    ctx.beginPath(); ctx.arc(w*0.33,-h*0.12,h*0.07,0,Math.PI*2);
-    ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.fill();
-    ctx.beginPath(); ctx.arc(w*0.38,-h*0.02,h*0.04,0,Math.PI*2);
-    ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.fill();
-
-    // X en los ojos si muerto
-    if(dead){
-        ctx.strokeStyle='rgba(255,80,80,0.9)'; ctx.lineWidth=2;
-        ctx.beginPath();
-        ctx.moveTo(w*0.28,-h*0.18); ctx.lineTo(w*0.43,h*0.06);
-        ctx.moveTo(w*0.43,-h*0.18); ctx.lineTo(w*0.28,h*0.06);
-        ctx.stroke();
-    }
-
-    ctx.restore();
-}
-
-        // — Draw one hook (top or bottom) —
-        // tipY = the dangerous end closest to the gap
-        function drawHookShape(cx, tipY, fromTop) {
+            // Light shafts drifting down from the surface.
             ctx.save();
-            const wallY     = fromTop ? 0 : canvas.height;
-            const shaftBase = tipY + (fromTop ? -40 : 40);
-
-            // Fishing line from wall
-            ctx.strokeStyle = 'rgba(210,210,210,0.7)'; ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.moveTo(cx, wallY); ctx.lineTo(cx, shaftBase); ctx.stroke();
-
-            // Shaft + J-bend
-            ctx.strokeStyle = '#c8c8c8'; ctx.lineWidth = 5;
-            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-            ctx.beginPath();
-            ctx.moveTo(cx, shaftBase);
-            ctx.lineTo(cx, tipY);
-            if (fromTop) {
-                // J curves right then the point aims back up
-                ctx.quadraticCurveTo(cx + 24, tipY, cx + 24, tipY - 18);
-            } else {
-                // Inverted J curves right then point aims back down
-                ctx.quadraticCurveTo(cx + 24, tipY, cx + 24, tipY + 18);
+            ctx.globalAlpha = 0.07;
+            ctx.fillStyle = '#ffffff';
+            for (let i = 0; i < 3; i++) {
+                const sx = ((gameT * 7 + i * (W / 3 + 40)) % (W + 160)) - 80;
+                ctx.beginPath();
+                ctx.moveTo(sx, 0);
+                ctx.lineTo(sx + 24, 0);
+                ctx.lineTo(sx + 62, H);
+                ctx.lineTo(sx + 16, H);
+                ctx.closePath();
+                ctx.fill();
             }
+            ctx.restore();
+
+            // Bubbles.
+            ctx.strokeStyle = 'rgba(0,255,255,0.4)';
+            ctx.lineWidth = 1;
+            for (const b of bubbles) {
+                b.y -= b.v * dt;
+                b.x += Math.sin(gameT * 2 + b.y * 0.06) * b.drift * dt;
+                if (b.y + b.r < 0) { b.y = H + b.r; b.x = Math.random() * W; }
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // Sea bed — marks the floor that kills you.
+            const bed = Math.max(4, Math.round(H * 0.045));
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, H - bed, W, bed);
+            ctx.fillStyle = '#00ff00';
+            ctx.fillRect(0, H - bed, W, 2);
+
+            if (scanlines) { ctx.fillStyle = scanlines; ctx.fillRect(0, 0, W, H); }
+        }
+
+        // — One hook. tipY is the dangerous end, at the edge of the gap. —
+        function drawHook(cx, tipY, fromTop) {
+            const R    = hookR;
+            const dir  = fromTop ? 1 : -1;          // toward the tip
+            const bx   = cx - R;                    // shaft sits left of centre
+            const cxb  = cx;                        // centre of the J bend
+            const shaftEndY = tipY - dir * R;
+
+            ctx.save();
+            ctx.lineCap  = 'round';
+            ctx.lineJoin = 'round';
+
+            // Line running back to the wall.
+            ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(bx, fromTop ? 0 : H);
+            ctx.lineTo(bx, shaftEndY - dir * R * 1.6);
             ctx.stroke();
 
-            // Barb
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            if (fromTop) {
-                ctx.moveTo(cx + 24, tipY - 18); ctx.lineTo(cx + 12, tipY - 32);
-            } else {
-                ctx.moveTo(cx + 24, tipY + 18); ctx.lineTo(cx + 12, tipY + 32);
-            }
-            ctx.stroke();
+            // Shaft + J bend + the point curling back.
+            const hook = new Path2D();
+            hook.moveTo(bx, shaftEndY - dir * R * 1.6);
+            hook.lineTo(bx, shaftEndY);
+            hook.arc(cxb, shaftEndY, R, Math.PI, 0, fromTop);
+            hook.lineTo(cx + R, tipY - dir * R * 1.9);
 
-            // Metal glint
-            ctx.fillStyle = 'rgba(255,255,255,0.88)';
-            ctx.beginPath();
-            ctx.arc(cx + 1, shaftBase + (fromTop ? 9 : -9), 2.5, 0, Math.PI * 2);
-            ctx.fill();
+            // Black plate first, steel over it — the site's hard-outline treatment.
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = R * 0.62;
+            ctx.stroke(hook);
+            ctx.strokeStyle = '#e8e8f2';
+            ctx.lineWidth = R * 0.3;
+            ctx.stroke(hook);
+
+            // Barb.
+            const barb = new Path2D();
+            barb.moveTo(cx + R, tipY - dir * R * 1.9);
+            barb.lineTo(cx + R * 1.75, tipY - dir * R * 1.05);
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = R * 0.42;
+            ctx.stroke(barb);
+            ctx.strokeStyle = '#ffff00';
+            ctx.lineWidth = R * 0.18;
+            ctx.stroke(barb);
+
             ctx.restore();
         }
 
         function drawObstacles() {
             const gs = gapSize();
-            obstacles.forEach(function(obs) {
-                const cx     = obs.x + OBS_W / 2;
-                const topTip = obs.cy - gs / 2;   // bottom of top hook
-                const botTip = obs.cy + gs / 2;   // top of bottom hook
-                drawHookShape(cx, topTip, true);
-                drawHookShape(cx, botTip, false);
-            });
+            for (const obs of obstacles) {
+                const cx = obs.x + OBS_W / 2;
+                drawHook(cx, obs.cy - gs / 2, true);
+                drawHook(cx, obs.cy + gs / 2, false);
+            }
         }
 
-        // — Collision: fish hitbox vs obstacle gap —
+        // — Fish: flat colour, hard black outline, one clear silhouette. —
+        function drawFish(dead) {
+            const w = fish.w, h = fish.h;
+            const cx = fish.x + w / 2, cy = fish.y + h / 2;
+            const body = dead ? '#8a8a96' : '#00ffff';
+            const fin  = dead ? '#5a5a66' : '#ff00ff';
+            const wag  = dead ? 0 : Math.sin(gameT * 11) * h * 0.13;
+
+            ctx.save();
+            ctx.translate(cx, cy);
+            if (dead) {
+                ctx.scale(1, -1);                    // belly up
+            } else {
+                ctx.rotate(Math.max(-0.5, Math.min(0.5, fish.vy / (H * 3))));
+            }
+
+            ctx.lineJoin  = 'round';
+            ctx.lineCap   = 'round';
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = Math.max(2, h * 0.12);
+
+            // Tail — forked, which is what makes the silhouette read as a fish.
+            ctx.beginPath();
+            ctx.moveTo(-w * 0.28, 0);
+            ctx.lineTo(-w * 0.68, -h * 0.62 + wag);
+            ctx.lineTo(-w * 0.56, wag * 0.5);
+            ctx.lineTo(-w * 0.68,  h * 0.62 + wag);
+            ctx.closePath();
+            ctx.fillStyle = fin; ctx.fill(); ctx.stroke();
+
+            // Dorsal fin.
+            ctx.beginPath();
+            ctx.moveTo(-w * 0.16, -h * 0.34);
+            ctx.lineTo(-w * 0.02, -h * 0.95);
+            ctx.lineTo( w * 0.20, -h * 0.30);
+            ctx.closePath();
+            ctx.fillStyle = fin; ctx.fill(); ctx.stroke();
+
+            // Pectoral fin.
+            ctx.beginPath();
+            ctx.moveTo(-w * 0.02, h * 0.10);
+            ctx.lineTo(-w * 0.12, h * 0.56);
+            ctx.lineTo( w * 0.16, h * 0.22);
+            ctx.closePath();
+            ctx.fillStyle = fin; ctx.fill(); ctx.stroke();
+
+            // Body.
+            ctx.beginPath();
+            ctx.ellipse(0, 0, w * 0.42, h * 0.5, 0, 0, Math.PI * 2);
+            ctx.fillStyle = body; ctx.fill(); ctx.stroke();
+
+            // Gill stroke.
+            ctx.beginPath();
+            ctx.moveTo(w * 0.06, -h * 0.28);
+            ctx.quadraticCurveTo(w * 0.14, 0, w * 0.06, h * 0.28);
+            ctx.lineWidth = Math.max(1.4, h * 0.07);
+            ctx.stroke();
+
+            // Eye.
+            const ex = w * 0.23, ey = -h * 0.13, er = h * 0.2;
+            ctx.beginPath();
+            ctx.arc(ex, ey, er, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff'; ctx.fill();
+            ctx.lineWidth = Math.max(1.4, h * 0.07); ctx.stroke();
+
+            ctx.strokeStyle = '#000000';
+            if (dead) {
+                ctx.lineWidth = Math.max(1.6, h * 0.08);
+                ctx.beginPath();
+                ctx.moveTo(ex - er * 0.62, ey - er * 0.62); ctx.lineTo(ex + er * 0.62, ey + er * 0.62);
+                ctx.moveTo(ex + er * 0.62, ey - er * 0.62); ctx.lineTo(ex - er * 0.62, ey + er * 0.62);
+                ctx.stroke();
+            } else {
+                ctx.beginPath();
+                ctx.arc(ex + er * 0.24, ey, er * 0.48, 0, Math.PI * 2);
+                ctx.fillStyle = '#000000'; ctx.fill();
+            }
+
+            ctx.restore();
+        }
+
+        // — Courier, outlined so it reads over anything —
+        function stamp(text, x, y, size, color, align) {
+            ctx.font = 'bold ' + size + 'px "Courier New", Courier, monospace';
+            ctx.textAlign = align || 'center';
+            ctx.textBaseline = 'middle';
+            ctx.lineJoin = 'round';
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = Math.max(3, size * 0.34);
+            ctx.strokeText(text, x, y);
+            ctx.fillStyle = color;
+            ctx.fillText(text, x, y);
+        }
+
         function checkHit(obs) {
             const gs     = gapSize();
             const gapTop = obs.cy - gs / 2;
             const gapBot = obs.cy + gs / 2;
-            // Inset hitbox slightly for fairness
-            const fx = fish.x + 6,  fy = fish.y + 5;
-            const fr = fish.x + fish.w - 9, fb = fish.y + fish.h - 5;
+            // Hitbox inset a little for fairness.
+            const fx = fish.x + fish.w * 0.18, fr = fish.x + fish.w * 0.86;
+            const fy = fish.y + fish.h * 0.16, fb = fish.y + fish.h * 0.84;
             if (fr <= obs.x || fx >= obs.x + OBS_W) return false;
             return (fy < gapTop || fb > gapBot);
         }
 
-        // — Game loop —
-        function gameLoop() {
+        function gameLoop(now) {
             gameFrame = null;
-            resize();
-            gameT += 0.038;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (!resize()) { requestGameFrame(); return; }
 
-            // Start screen
+            const t = (typeof now === 'number') ? now : performance.now();
+            let dt = lastTime ? (t - lastTime) / 1000 : 1 / 60;
+            lastTime = t;
+            dt = Math.min(Math.max(dt, 0), 1 / 20);   // survive a tab switch
+            gameT += dt;
+
+            drawWater(dt);
+
+            // Idle / start screen. The fish bobs mid-field and the prompt sits
+            // below it — centred text would land on top of the fish at 360px.
             if (!gameRunning && !isDead) {
-                ctx.fillStyle = 'rgba(0,0,0,0.68)';
-                ctx.textAlign = 'center';
-                ctx.font = 'bold ' + Math.min(20, Math.floor(canvas.width / 17)) + 'px "Courier New"';
-                ctx.fillText('ESPACIO / TAP PARA JUGAR', canvas.width / 2, canvas.height / 2 - 14);
-                ctx.font = 'bold ' + Math.min(15, Math.floor(canvas.width / 20)) + 'px "Courier New"';
-                ctx.fillText('esquivá los anzuelos', canvas.width / 2, canvas.height / 2 + 14);
+                fish.y = H / 2 - fish.h / 2 + Math.sin(gameT * 1.6) * H * 0.05;
                 drawFish(false);
+                const s = Math.max(10, Math.min(17, W / 24));
+                stamp('ESPACIO / TAP PARA JUGAR', W / 2, H * 0.68, s, '#ffff00');
+                stamp('esquivá los anzuelos', W / 2, H * 0.68 + s * 1.5, s * 0.82, '#00ffff');
                 requestGameFrame();
                 return;
             }
 
-            // Death screen
+            // Death screen.
             if (isDead) {
-                deathTimer++;
+                deathTimer += dt;
                 drawObstacles();
                 drawFish(true);
-                ctx.fillStyle = 'rgba(0,0,0,0.75)';
-                ctx.textAlign = 'center';
-                ctx.font = 'bold ' + Math.min(22, Math.floor(canvas.width / 22)) + 'px "Courier New"';
-                ctx.fillText('ATRAPADO!  score: ' + score, canvas.width / 2, canvas.height / 2 - 10);
-                ctx.font = 'bold ' + Math.min(15, Math.floor(canvas.width / 20)) + 'px "Courier New"';
-                ctx.fillText('tap / espacio para volver', canvas.width / 2, canvas.height / 2 + 16);
-                if (deathTimer > 80) { isDead = false; resetFish(); }
+                const s = Math.max(12, Math.min(20, W / 20));
+                stamp('ATRAPADO — ' + score, W / 2, H / 2 - s * 0.85, s, '#ff00ff');
+                stamp('tap / espacio para volver', W / 2, H / 2 + s * 0.85, s * 0.72, '#ffffff');
+                if (deathTimer > 1.4) { isDead = false; resetFish(); }
                 requestGameFrame();
                 return;
             }
 
-            // — Physics —
-            fish.vy = Math.min(fish.vy + GRAVITY, MAX_VY);
-            fish.y += fish.vy;
+            // Physics.
+            fish.vy = Math.min(fish.vy + GRAVITY_H * H * dt, MAX_VY_H * H);
+            fish.y += fish.vy * dt;
 
-            // Wall collision → die
-            if (fish.y <= 0 || fish.y + fish.h >= canvas.height) {
-                isDead = true; deathTimer = 0; gameRunning = false;
-                requestGameFrame();
+            if (fish.y <= 0 || fish.y + fish.h >= H) {
+                fish.y = Math.max(0, Math.min(fish.y, H - fish.h));
+                die();
                 return;
             }
 
-            // — Obstacles —
-            obsTimer++;
+            // Obstacles.
+            obsTimer += dt;
             if (obsTimer >= obsInterval) {
                 spawnObstacle();
-                obsTimer    = 0;
-                obsInterval = Math.max(72, obsInterval - 2);
+                obsTimer = 0;
+                obsInterval = Math.max(1.05, obsInterval - 0.04);
             }
 
             let killed = false;
             for (let i = obstacles.length - 1; i >= 0; i--) {
-                obstacles[i].x -= speed;
-                // Score when fish passes the obstacle
-                if (!obstacles[i].passed && obstacles[i].x + OBS_W < fish.x) {
-                    obstacles[i].passed = true;
+                const obs = obstacles[i];
+                obs.x -= speed * dt;
+                if (!obs.passed && obs.x + OBS_W < fish.x) {
+                    obs.passed = true;
                     score++;
-                    // Speed up every 5 points
-                    if (score % 5 === 0) speed = Math.min(speed + 0.55, 9);
+                    if (score % 5 === 0) speed = Math.min(speed * 1.08, W * 0.55);
                 }
-                if (obstacles[i].x + OBS_W < -40) { obstacles.splice(i, 1); continue; }
-                if (checkHit(obstacles[i])) killed = true;
+                if (obs.x + OBS_W < -40) { obstacles.splice(i, 1); continue; }
+                if (checkHit(obs)) killed = true;
             }
 
-            if (killed) {
-                isDead = true; deathTimer = 0; gameRunning = false;
-                requestGameFrame();
-                return;
-            }
+            if (killed) { die(); return; }
 
             drawObstacles();
             drawFish(false);
 
-            // Score display
-            ctx.fillStyle = 'rgba(0,0,0,0.58)';
-            ctx.textAlign = 'left';
-            ctx.font = 'bold ' + Math.min(18, Math.floor(canvas.width / 20)) + 'px "Courier New"';
-            ctx.fillText('score: ' + score, 10, 28);
+            // Score, on its own plate so it never fights the water.
+            const s = Math.max(11, Math.min(16, W / 26));
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(8, 8, s * 5.4, s * 1.7);
+            ctx.fillStyle = '#00ff00';
+            ctx.fillRect(8, 8, s * 5.4, 2);
+            stamp(String(score).padStart(2, '0') + (best ? '  b' + best : ''),
+                  8 + s * 0.5, 8 + s * 0.9, s, '#00ff00', 'left');
 
             requestGameFrame();
         }
 
         // — Input —
-        canvas.addEventListener('keydown', function(e) {
+        canvas.addEventListener('keydown', function (e) {
             if (e.code === 'Space' || e.code === 'ArrowUp') {
-                const tag = document.activeElement ? document.activeElement.tagName : '';
-                if (tag !== 'INPUT' && tag !== 'TEXTAREA') e.preventDefault();
-                if (isDead && deathTimer > 30) { isDead = false; resetFish(); return; }
+                e.preventDefault();
+                if (isDead && deathTimer > 0.45) { isDead = false; resetFish(); return; }
                 flap();
             }
         });
-        canvas.addEventListener('click', function() {
-            if (isDead && deathTimer > 30) { isDead = false; resetFish(); return; }
+        canvas.addEventListener('click', function () {
+            canvas.focus();
+            if (isDead && deathTimer > 0.45) { isDead = false; resetFish(); return; }
             flap();
         });
-        canvas.addEventListener('touchstart', function(e) {
+        canvas.addEventListener('touchstart', function (e) {
             e.preventDefault();
-            if (isDead && deathTimer > 30) { isDead = false; resetFish(); return; }
+            if (isDead && deathTimer > 0.45) { isDead = false; resetFish(); return; }
             flap();
         }, { passive: false });
 
+        window.addEventListener('resize', function () {
+            if (!resize()) return;
+            if (!gameRunning && !isDead) resetFish();
+            requestGameFrame();
+        });
+
+        resize();
+        resetFish();
         gameLoop();
     }
 
@@ -1195,7 +1247,10 @@ function initFishCursor() {
 
     document.addEventListener('mousemove', e => {
         mx = e.clientX; my = e.clientY;
-        if (!reducedMotion.matches) canvas.style.display = 'block';
+        // The minigame draws its own fish; a second one swimming over the
+        // playfield just reads as a bug, so the cursor stands down in there.
+        const overGame = e.target && e.target.closest && e.target.closest('.game__stage');
+        canvas.style.display = (reducedMotion.matches || overGame) ? 'none' : 'block';
     });
 
     loop();

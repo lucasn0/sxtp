@@ -1205,3 +1205,16 @@ canvas:focus-visible,
 /* The punch line is now the event name, mid-paragraph rather than the tail,
    so it needs breathing room below it as well as above. */
 .announce__punch { margin-bottom: var(--s2); }
+
+/* The game canvas now paints its own dark water, so the stage only needs a
+   calm fallback for the no-JS case instead of the pink-to-cyan gradient.
+   A little more height as well — a flappy playfield needs room to arc in. */
+.game__stage { background: #03003d; }
+.game__stage canvas { height: clamp(210px, 24vw, 300px); }
+
+/* The clock is decoration — STYLE.md calls it expendable — and on a phone it
+   costs a whole nav row. Hidden below the site's phone breakpoint; the
+   .timestamp rules in the design file's 599px block go inert with it. */
+@media (max-width: 599px) {
+  .timestamp { display: none; }
+}
