@@ -1237,3 +1237,25 @@ canvas:focus-visible,
 .popup-btn:hover,
 .popup-btn:focus,
 .popup-btn:active { color: var(--sxtp-black); }
+
+/* Mobile reading order: the camera loops and the links lead, then the
+   announcement and its actions, then shows, then the album.
+   `display: contents` promotes the three media panels to grid items of
+   .content-grid so each can be placed on its own; from 600px up the column
+   reassembles exactly as before and nothing here applies. */
+@media (max-width: 599px) {
+  .content-grid {
+    grid-template-areas:
+      "tv"
+      "links"
+      "main"
+      "shows"
+      "album";
+  }
+
+  .media { display: contents; }
+
+  .panel--tv { grid-area: tv; }
+  .panel--links { grid-area: links; }
+  .panel--album { grid-area: album; }
+}
