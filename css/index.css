@@ -1218,3 +1218,22 @@ canvas:focus-visible,
 @media (max-width: 599px) {
   .timestamp { display: none; }
 }
+
+/* A button that happens to be a link must never inherit the global link
+   colours. `a:visited` and `a:hover` are (0,1,1); `.retro-btn` / `.popup-btn`
+   are only (0,1,0), so the label could repaint itself white once the link had
+   been visited, or yellow-on-yellow if `hover: hover` failed to match. Pin the
+   ink in every link state — black on these fills is the only combination in
+   the palette that clears 4.5:1. */
+.retro-btn,
+.retro-btn:link,
+.retro-btn:visited,
+.retro-btn:hover,
+.retro-btn:focus,
+.retro-btn:active,
+.popup-btn,
+.popup-btn:link,
+.popup-btn:visited,
+.popup-btn:hover,
+.popup-btn:focus,
+.popup-btn:active { color: var(--sxtp-black); }
