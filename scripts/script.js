@@ -314,9 +314,7 @@ window.onload = function() {
             </div>
             <div class="popup-content">
                 <div class="popup-buttons">
-                    <a href="audio/sexo-debil.mp3" download class="popup-btn" style="background: #ff6600">demo_1</a>
-                    <a href="audio/sexo-debil.mp3" download class="popup-btn" style="background: #ff6600">demo_2</a>
-                    <a href="audio/sexo-debil.mp3" download class="popup-btn" style="background: #ff6600">demo_3</a>
+                    <a href="audio/demo_1.m4a" download class="popup-btn" style="background: #ff6600">demo_1</a>
                 </div>
             </div>
         `;
@@ -412,22 +410,10 @@ window.onload = function() {
     // Audio player functionality
     const audioPlayer = document.getElementById('audio-player');
     const playButton = document.querySelector('.play-btn');
-    const volumeSlider = document.getElementById('volume-slider');
-    const volumeDisplay = document.getElementById('volume-display');
-    const volumeControl = document.querySelector('.volume-control');
-    
+
     if (audioPlayer && playButton) {
         // Set volume to 60%
         audioPlayer.volume = 0.6;
-        
-        // Volume slider control
-        if (volumeSlider && volumeDisplay) {
-            volumeSlider.addEventListener('input', function() {
-                const volume = this.value / 100;
-                audioPlayer.volume = volume;
-                volumeDisplay.textContent = this.value + '%';
-            });
-        }
         
         playButton.addEventListener('click', async function(e) {
             e.stopPropagation(); // Prevent default nav-link behavior
@@ -436,26 +422,15 @@ window.onload = function() {
                 try { await audioPlayer.play(); }
                 catch { playButton.textContent = "reintentar"; return; }
                 playButton.textContent = 'pause';
-                // Show volume control when playing (only on desktop via CSS)
-                if (volumeControl) {
-                    volumeControl.classList.add('is-visible');
-                }
             } else {
                 audioPlayer.pause();
                 playButton.textContent = 'play!';
-                // Hide volume control when paused
-                if (volumeControl) {
-                    volumeControl.classList.remove('is-visible');
-                }
             }
         });
         
-        // Reset button text and hide volume control when audio ends
+        // Reset button text when audio ends
         audioPlayer.addEventListener('ended', function() {
             playButton.textContent = 'play!';
-            if (volumeControl) {
-                volumeControl.classList.remove('is-visible');
-            }
         });
     }
 
