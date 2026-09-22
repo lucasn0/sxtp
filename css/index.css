@@ -958,6 +958,9 @@ canvas:focus-visible,
   gap: var(--s2);
 }
 
+/* One button per row, for lists of separate downloads. */
+.popup-buttons--stack { flex-direction: column; }
+
 .popup-btn {
   flex: 1 1 96px;
   min-height: 44px;
