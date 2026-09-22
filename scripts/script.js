@@ -314,7 +314,7 @@ window.onload = function() {
             </div>
             <div class="popup-content">
                 <div class="popup-buttons popup-buttons--stack">
-                    <a href="audio/demo_1.m4a" download class="popup-btn" style="background: #ff6600">demo_1</a>
+                    <a href="audio/demo_1.mp4" download class="popup-btn" style="background: #ff6600">demo_1</a>
                     <a href="images/mceui.pdf" download class="popup-btn" style="background: #ffff00">mceui.pdf</a>
                 </div>
             </div>
