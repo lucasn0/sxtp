@@ -84,3 +84,63 @@
   font-size: 1rem;
   overflow-wrap: anywhere;
 }
+
+/* ===== EN CONSTRUCCIÓN ===== */
+/* The gear page stays in the markup, blurred and inert; the sign stacks on
+   top in the same grid cell and sticks while the blur scrolls past. */
+
+.construction {
+  flex: 1 0 auto;
+  display: grid;
+  overflow: clip;
+}
+
+.construction > * {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+
+.construction__work {
+  filter: blur(8px);
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.construction__notice {
+  position: sticky;
+  top: 160px;
+  top: clamp(80px, 30svh, 260px);
+  z-index: 2;
+  align-self: start;
+  justify-self: center;
+  width: min(100% - 2 * var(--gutter), 48rem);
+  margin-bottom: var(--s8);
+}
+
+/* Hazard tape top and bottom, a black rule under each band. */
+.construction__sign {
+  --band: 18px;
+  --hazard: repeating-linear-gradient(
+    -45deg,
+    var(--sxtp-black) 0 14px,
+    var(--sxtp-yellow) 14px 28px
+  );
+  padding: calc(var(--band) + var(--s8)) var(--s4);
+  background:
+    linear-gradient(var(--sxtp-black), var(--sxtp-black)) 0 var(--band) / 100% 3px no-repeat,
+    linear-gradient(var(--sxtp-black), var(--sxtp-black)) 0 calc(100% - var(--band)) / 100% 3px no-repeat,
+    var(--hazard) top / 100% var(--band) no-repeat,
+    var(--hazard) bottom / 100% var(--band) no-repeat,
+    var(--sxtp-yellow);
+  border: 4px solid var(--sxtp-black);
+  box-shadow: 8px 8px 0 var(--sxtp-black);
+  color: var(--sxtp-black);
+  font-size: clamp(1.75rem, 8vw, 4rem);
+  font-weight: bold;
+  letter-spacing: 0.04em;
+  line-height: 1.05;
+  text-align: center;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}

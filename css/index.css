@@ -240,7 +240,7 @@ canvas:focus-visible,
 /* Each destination carries its own plate colour. */
 .top-nav .nav-link { --accent: var(--sxtp-magenta); }
 .top-nav .nav-link[href*="gallery"] { --accent: var(--sxtp-cyan); }
-.top-nav .nav-link[href*="audio"] { --accent: var(--sxtp-green); }
+.top-nav .nav-link[href*="audio"] { --accent: var(--sxtp-green); text-transform: none; }
 .top-nav .nav-link--play { --accent: var(--sxtp-yellow); }
 
 .nav-logo {
