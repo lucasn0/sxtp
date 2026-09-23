@@ -50,7 +50,13 @@
 
 * { margin: 0; padding: 0; }
 
-html { -webkit-text-size-adjust: 100%; }
+/* Solid ground behind everything: Safari tints its top bar from this
+   (it can't sample a gradient), and it's what overscroll reveals. Matches
+   the top stop of the nav gradient. */
+html {
+  -webkit-text-size-adjust: 100%;
+  background-color: #2417ff;
+}
 
 body {
   font-family: var(--sxtp-font);
