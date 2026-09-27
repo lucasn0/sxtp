@@ -1,0 +1,11 @@
+# FRANJA DE ABAJO DE LA PÁGINA
+#
+# Es el cartel que aparece al pie de todas las páginas.
+# Cambiá lo que está después de "link:" y "texto:".
+#
+#   - link:  a dónde lleva al tocarlo (el link de entradas, por ejemplo).
+#            Si lo dejás vacío, el texto se muestra sin link.
+#   - texto: lo que dice el cartel.
+
+link: https://www.tikzet.com/events/magnetismo-vol
+texto: ENTRADAS ACÁ

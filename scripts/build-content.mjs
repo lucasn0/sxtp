@@ -1,6 +1,7 @@
 // Rebuilds the parts of the site that the band edits without touching HTML:
 //   contenido/shows.txt   -> the "próximos shows" list in index.html
 //   contenido/galeria/*   -> the photo grid in pages/gallery.html
+//   contenido/footer.txt  -> the news strip link at the foot of every page
 //
 // Runs in the deploy workflow on every push, and locally with
 //   node scripts/build-content.mjs
@@ -16,6 +17,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SHOWS_FILE = join(ROOT, 'contenido/shows.txt');
 const GALLERY_DIR = join(ROOT, 'contenido/galeria');
 const CAPTIONS_FILE = join(GALLERY_DIR, 'descripciones.txt');
+const FOOTER_FILE = join(ROOT, 'contenido/footer.txt');
 
 const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif']);
 // Browsers other than Safari can't show these; flag them instead of publishing a broken tile.
@@ -242,8 +244,34 @@ function buildGallery() {
     };
 }
 
-updateFile('index.html', { shows: buildShows() });
-updateFile('pages/gallery.html', buildGallery());
+/* ===== FOOTER ===== */
+
+// "clave: valor" lines; the value may itself contain colons (https://...).
+function buildFooter() {
+    const fields = {};
+    if (existsSync(FOOTER_FILE)) {
+        readFileSync(FOOTER_FILE, 'utf8').split(/\r?\n/).forEach((raw, i) => {
+            const text = raw.trim();
+            if (!text || text.startsWith('#')) return;
+            const m = text.match(/^([a-záéíóú]+)\s*:\s*(.*)$/i);
+            if (!m) { warn(`footer.txt línea ${i + 1}: tiene que ser "link: ..." o "texto: ..."`); return; }
+            fields[m[1].toLowerCase()] = m[2].trim();
+        });
+    }
+    const text = escapeHtml(fields.texto || 'ENTRADAS ACÁ');
+    let link = fields.link || '';
+    if (link && !/^https?:\/\//i.test(link)) {
+        warn('footer.txt: el link tiene que empezar con https:// — muestro el texto sin link');
+        link = '';
+    }
+    const pad = ' '.repeat(16);
+    return link ? `${pad}<a href="${escapeHtml(link)}">${text}</a>` : `${pad}<span>${text}</span>`;
+}
+
+const footer = buildFooter();
+updateFile('index.html', { shows: buildShows(), footer });
+updateFile('pages/gallery.html', { ...buildGallery(), footer });
+updateFile('pages/audio.html', { footer });
 
 if (process.env.GITHUB_STEP_SUMMARY && warnings.length) {
     writeFileSync(process.env.GITHUB_STEP_SUMMARY, `## Avisos\n\n${warnings.map(w => `- ${w}`).join('\n')}\n`, { flag: 'a' });
