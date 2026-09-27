@@ -74,7 +74,7 @@ Gradients may appear in psychedelic poster art, existing magenta-to-cyan panels,
 
 ### Images and texture
 
-Use existing assets first: `images/sxtp-imgs/`, `images/gallery/`, `images/vids-gifs/`, `images/word-collage.jpg`, and `images/no-signal.jpg`. Actual performance photos and artwork carry the identity better than manufactured decoration.
+Use existing assets first: `images/sxtp-imgs/`, `contenido/galeria/`, `images/vids-gifs/`, `images/word-collage.jpg`, and `images/no-signal.jpg`. Actual performance photos and artwork carry the identity better than manufactured decoration.
 
 Preserve photographic grain and strong contrast. Avoid stacking filters until faces or artwork disappear. Use `object-fit: cover` for deliberate photo crops and `contain` for complete artwork and enlarged gallery images. Set intrinsic dimensions or an aspect ratio to prevent layout jumps. Do not stretch images.
 

@@ -664,6 +664,21 @@ canvas:focus-visible,
   font-weight: bold;
 }
 
+.show-tickets {
+  margin-left: auto;
+  color: var(--sxtp-yellow);
+  font-size: 0.875rem;
+  font-weight: bold;
+  text-underline-offset: 3px;
+}
+
+.show-tickets:hover,
+.show-tickets:focus-visible { color: var(--sxtp-black); background: var(--sxtp-yellow); }
+
+.show-item--empty { color: var(--sxtp-cyan); font-weight: bold; }
+
+.show-item[hidden] { display: none; }
+
 .no-signal {
   width: 100%;
   aspect-ratio: 4 / 3;

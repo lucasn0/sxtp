@@ -174,6 +174,24 @@ window.onload = function() {
     updateTime();
     setInterval(updateTime, 1000);
 
+    // Upcoming shows: the list is built from contenido/shows.txt on each deploy,
+    // so a show that has happened since then is dropped here instead.
+    function hidePastShows() {
+        const list = document.querySelector('.show-list');
+        if (!list) return;
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        let upcoming = 0;
+        list.querySelectorAll('.show-item[data-date]').forEach(item => {
+            item.hidden = item.dataset.date < today;
+            if (!item.hidden) upcoming++;
+        });
+        const empty = list.querySelector('.show-item--empty');
+        if (empty) empty.hidden = upcoming > 0;
+    }
+
+    hidePastShows();
+
     // Share button functionality
     const shareButton = document.querySelector('.cyan-btn');
     if (shareButton) {

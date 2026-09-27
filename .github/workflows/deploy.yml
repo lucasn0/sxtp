@@ -1,0 +1,51 @@
+# Publishes the site on every push to main. Before uploading, it rebuilds the
+# shows list and the gallery from contenido/, so editing shows.txt or dropping
+# a photo in contenido/galeria/ is all it takes to update the page.
+#
+# Requires Settings → Pages → Build and deployment → Source: "GitHub Actions".
+name: Publicar sitio
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      # "Past show" means past in Buenos Aires, not in the runner's UTC.
+      TZ: America/Argentina/Buenos_Aires
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history: the gallery is ordered by when each photo was added.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Armar shows y galería
+        run: node scripts/build-content.mjs
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

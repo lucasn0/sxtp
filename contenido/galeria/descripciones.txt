@@ -1,0 +1,25 @@
+# DESCRIPCIONES DE LAS FOTOS (opcional)
+#
+# No hace falta tocar este archivo para subir fotos: cualquier foto que
+# subas a esta carpeta aparece sola en la galería.
+#
+# Si querés, podés agregar una línea por foto:
+#
+#   NOMBRE DEL ARCHIVO | DESCRIPCIÓN | flyer
+#
+#   - La descripción la leen quienes navegan con lector de pantalla
+#     y aparece si la foto no carga. Contá qué se ve en la foto.
+#   - Poné "flyer" al final si es un flyer o una tapa: se muestra
+#     entera en vez de recortada en un cuadrado.
+#   - Las líneas que empiezan con # (como estas) no se usan.
+
+1.jpg | Pantalla de computadora con el flyer naranja de PIZZTAPE: 17 abr, Moscú, 20:00hs | flyer
+2.jpeg | Foto en blanco y negro de la banda de noche en una terraza, algunos sentados en la baranda
+3.jpeg | Dos integrantes muestran sus tatuajes de ángeles en el brazo
+4.jpeg | Flyer azul con peces: SXTP despide sextape, 4 de septiembre en El Portal, gratis | flyer
+5.jpeg | Show en vivo en blanco y negro: guitarra, micrófono y el público encima del escenario
+6.jpeg | Arte verde tramado con el logo sxtp y la frase «poderoso dolor humano» | flyer
+7.jpeg | El bajista tocando frente al micrófono, con flash
+8.jpeg | Dos integrantes posando con una lata después del show
+9.jpeg | Tapa en blanco y negro: SEXTAPE — LOS RUIDOS DE LA HUMANIDAD | flyer
+10.jpeg | La banda y amigos en el camarín, con las paredes escritas

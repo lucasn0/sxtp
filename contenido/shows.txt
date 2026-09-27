@@ -1,0 +1,18 @@
+# PRÓXIMOS SHOWS
+#
+# Un show por línea:   FECHA | LUGAR | LINK DE ENTRADAS
+#
+#   - La fecha va como día/mes (03/10) o día/mes/año (03/10/2027).
+#   - El link de entradas es opcional: si no hay, dejá solo fecha | lugar.
+#   - El orden no importa: la página los ordena por fecha.
+#   - Los shows que ya pasaron desaparecen solos de la página.
+#     Podés borrarlos de acá cuando quieras, pero no hace falta.
+#   - Las líneas que empiezan con # (como estas) no se muestran.
+#
+# Ejemplos:
+#   15/11 | El Portal, Almagro | https://www.tikzet.com/events/lo-que-sea
+#   22/11 | Parque Patricios
+
+03/10 | Almagro
+09/10 | Almagro
+30/10 | Parque Patricios
