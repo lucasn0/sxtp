@@ -13,6 +13,6 @@
 #   15/11 | El Portal, Almagro | https://www.tikzet.com/events/lo-que-sea
 #   22/11 | Parque Patricios
 
-03/10 | Almagro
+03/10 | Almagro | https://sxtp.com.ar/
 09/10 | Almagro
 30/10 | Parque Patricios
