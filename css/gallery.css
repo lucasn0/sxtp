@@ -36,7 +36,9 @@
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
-.gallery-item img {
+.gallery-item img,
+.gallery-item video {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -83,7 +85,8 @@
   padding: var(--s3);
 }
 
-.gallery-item[data-state="error"] img { display: none; }
+.gallery-item[data-state="error"] img,
+.gallery-item[data-state="error"] video { display: none; }
 
 .gallery-item[data-state="error"]::after {
   content: "IMAGEN NO DISPONIBLE";
@@ -105,7 +108,8 @@
   background: rgba(0, 0, 0, 0.95);
 }
 
-.gallery-fullscreen img {
+.gallery-fullscreen img,
+.gallery-fullscreen video {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
@@ -131,3 +135,6 @@
 @media (hover: hover) {
   .gallery-close:hover { background: var(--sxtp-yellow); }
 }
+
+/* The grid preview is a square crop; the enlarged view shows the whole clip. */
+.gallery-item--video[data-state="error"]::after { content: "VIDEO NO DISPONIBLE"; }

@@ -1,14 +1,14 @@
-# DESCRIPCIONES DE LAS FOTOS (opcional)
+# DESCRIPCIONES DE LAS FOTOS Y VIDEOS (opcional)
 #
-# No hace falta tocar este archivo para subir fotos: cualquier foto que
-# subas a esta carpeta aparece sola en la galería.
+# No hace falta tocar este archivo para subir fotos o videos: cualquier
+# archivo que subas a esta carpeta aparece solo en la galería.
 #
-# Si querés, podés agregar una línea por foto:
+# Si querés, podés agregar una línea por foto o video:
 #
 #   NOMBRE DEL ARCHIVO | DESCRIPCIÓN | flyer
 #
 #   - La descripción la leen quienes navegan con lector de pantalla
-#     y aparece si la foto no carga. Contá qué se ve en la foto.
+#     y aparece si la foto no carga. Contá qué se ve.
 #   - Poné "flyer" al final si es un flyer o una tapa: se muestra
 #     entera en vez de recortada en un cuadrado.
 #   - Las líneas que empiezan con # (como estas) no se usan.

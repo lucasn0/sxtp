@@ -1,6 +1,6 @@
 // Rebuilds the parts of the site that the band edits without touching HTML:
 //   contenido/shows.txt   -> the "próximos shows" list in index.html
-//   contenido/galeria/*   -> the photo grid in pages/gallery.html
+//   contenido/galeria/*   -> the photo and video grid in pages/gallery.html
 //   contenido/footer.txt  -> the news strip link at the foot of every page
 //
 // Runs in the deploy workflow on every push, and locally with
@@ -8,7 +8,7 @@
 // It only rewrites the text between <!-- auto:NAME --> and <!-- /auto:NAME -->
 // markers, so running it twice changes nothing. No dependencies.
 
-import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join, extname, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -20,8 +20,12 @@ const CAPTIONS_FILE = join(GALLERY_DIR, 'descripciones.txt');
 const FOOTER_FILE = join(ROOT, 'contenido/footer.txt');
 
 const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif']);
+const VIDEO_EXTS = new Set(['.mp4', '.webm', '.m4v']);
 // Browsers other than Safari can't show these; flag them instead of publishing a broken tile.
-const UNSUPPORTED_EXTS = new Set(['.heic', '.heif', '.tif', '.tiff', '.bmp', '.raw', '.dng']);
+// iPhone .mov clips are usually HEVC, which Chrome and Firefox won't play.
+const UNSUPPORTED_EXTS = new Set(['.heic', '.heif', '.tif', '.tiff', '.bmp', '.raw', '.dng', '.mov', '.avi', '.mkv']);
+// Every visitor downloads the clips in the grid, so big ones make the page crawl.
+const VIDEO_WARN_BYTES = 15 * 1024 * 1024;
 // A show stays listed through the day it happens, and a date without a year
 // means the next one coming up, allowing this many days for a late upload.
 const YEAR_GRACE_DAYS = 60;
@@ -214,17 +218,35 @@ function buildGallery() {
     for (const name of readdirSync(GALLERY_DIR)) {
         if (name.startsWith('.')) continue;
         const ext = extname(name).toLowerCase();
-        if (UNSUPPORTED_EXTS.has(ext)) { warn(`galería: "${name}" está en un formato que la mayoría de los navegadores no muestra. Subila como .jpg`); continue; }
+        if (UNSUPPORTED_EXTS.has(ext)) { warn(`galería: "${name}" está en un formato que la mayoría de los navegadores no muestra. Subila como .jpg (fotos) o .mp4 (videos)`); continue; }
+        const entry = { name, added: added.get(name) ?? now, ...captions.get(name.toLowerCase()) };
+        if (VIDEO_EXTS.has(ext)) {
+            const mb = statSync(join(GALLERY_DIR, name)).size / 1024 / 1024;
+            if (mb * 1024 * 1024 > VIDEO_WARN_BYTES) warn(`galería: "${name}" pesa ${mb.toFixed(0)} MB y va a tardar en cargar. Mejor subilo más corto o comprimido (menos de 15 MB)`);
+            photos.push({ ...entry, video: true });
+            continue;
+        }
         if (!IMAGE_EXTS.has(ext)) continue;
         const size = imageSize(readFileSync(join(GALLERY_DIR, name)));
         if (!size && ext !== '.avif') warn(`galería: no pude leer el tamaño de "${name}", la muestro igual`);
-        photos.push({ name, size, added: added.get(name) ?? now, ...captions.get(name.toLowerCase()) });
+        photos.push({ ...entry, size });
     }
     photos.sort((a, b) => b.added - a.added || byName.compare(a.name, b.name));
 
     const pad = ' '.repeat(16);
     const tiles = photos.map((photo, i) => {
         const src = `../contenido/galeria/${encodeURIComponent(photo.name)}`;
+        const no = String(i + 1).padStart(2, '0');
+        if (photo.video) {
+            const label = escapeHtml(photo.alt || 'Video de SXTP');
+            // Muted autoplay loops like a gif; clicking opens it with sound and controls.
+            return [
+                `${pad}<a class="gallery-item gallery-item--video grain" href="${src}" aria-label="${label}">`,
+                `${pad}    <video src="${src}" muted loop playsinline autoplay preload="metadata"></video>`,
+                `${pad}    <span class="gallery-item__no">${no} ▶</span>`,
+                `${pad}</a>`,
+            ].join('\n');
+        }
         const alt = escapeHtml(photo.alt || 'Foto de SXTP');
         const dims = photo.size ? ` width="${photo.size.width}" height="${photo.size.height}"` : '';
         // The first row is on screen at load; the rest can wait.
@@ -233,13 +255,19 @@ function buildGallery() {
             `${pad}<a class="gallery-item${photo.art ? ' gallery-item--art' : ''} grain" href="${src}">`,
             `${pad}    <img src="${src}"${dims}${lazy}`,
             `${pad}         alt="${alt}">`,
-            `${pad}    <span class="gallery-item__no">${String(i + 1).padStart(2, '0')}</span>`,
+            `${pad}    <span class="gallery-item__no">${no}</span>`,
             `${pad}</a>`,
         ].join('\n');
     });
-    console.log(`galería: ${photos.length} fotos`);
+    const videos = photos.filter(p => p.video).length;
+    const stills = photos.length - videos;
+    const count = [
+        stills || !videos ? `${stills} ${stills === 1 ? 'foto' : 'fotos'}` : '',
+        videos ? `${videos} ${videos === 1 ? 'video' : 'videos'}` : '',
+    ].filter(Boolean).join(' · ');
+    console.log(`galería: ${count}`);
     return {
-        'gallery-count': `            <span class="page-sub">${photos.length} ${photos.length === 1 ? 'foto' : 'fotos'}</span>`,
+        'gallery-count': `            <span class="page-sub">${count}</span>`,
         'gallery': tiles.join('\n'),
     };
 }
