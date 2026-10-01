@@ -287,6 +287,9 @@ canvas:focus-visible,
 
 .nav-link:active { transform: translate(1px, 1px); }
 
+/* The EP's name is an acronym: it keeps its capitals. */
+.nav-link[data-section="mceui"] { text-transform: none; }
+
 .nav-link[aria-current="page"] {
   background: var(--sxtp-black);
   border-color: var(--sxtp-black);

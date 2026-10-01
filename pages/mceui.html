@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
+    <meta name="theme-color" content="#2417ff">
+    <title>★ sxtp ★ MCEUI</title>
+    <link rel="stylesheet" href="../css/index.css?v=20261001c">
+    <link rel="stylesheet" href="../css/mceui.css?v=20261001a">
+    <link rel="icon" href="../images/favicon.ico">
+</head>
+
+<body>
+    <div class="page" data-bg="beam">
+
+        <!-- Top Navigation -->
+        <nav class="top-nav">
+            <a class="nav-logo wordmark" href="../index.html">sxtp</a>
+            <a class="nav-link" href="gallery.html" data-section="vision">gallery</a>
+            <a class="nav-link" href="mceui.html" data-section="mceui" aria-current="page">MCEUI</a>
+            <button type="button" class="nav-link nav-link--play play-btn" data-section="play">play!</button>
+            <span class="timestamp" id="live-time"></span>
+        </nav>
+
+        <header class="page-head">
+            <h1 class="page-title wordmark">MCEUI</h1>
+            <span class="page-sub">EP · 4 temas</span>
+        </header>
+
+        <main class="mceui">
+            <div class="mceui__download">
+                <a class="retro-btn yellow-btn" href="../audio/MCEUI.zip" download>descargar el EP ↓</a>
+                <span class="mceui__file">MCEUI.zip · mp3 · 34 MB</span>
+            </div>
+
+            <!-- Muted loops; the ♪ button turns one clip's sound on (and the others off). -->
+            <div class="mceui__clips">
+                <figure class="clip grain">
+                    <video src="../images/vids-gifs/mceui1.mp4" width="576" height="800" muted loop playsinline autoplay preload="metadata"></video>
+                    <span class="clip__no">01</span>
+                    <button type="button" class="clip__sound" aria-pressed="false" aria-label="Activar sonido del video 1">♪</button>
+                </figure>
+                <figure class="clip grain">
+                    <video src="../images/vids-gifs/mceui2.mp4" width="576" height="800" muted loop playsinline autoplay preload="metadata"></video>
+                    <span class="clip__no">02</span>
+                    <button type="button" class="clip__sound" aria-pressed="false" aria-label="Activar sonido del video 2">♪</button>
+                </figure>
+                <figure class="clip grain">
+                    <video src="../images/vids-gifs/mceui3.mp4" width="576" height="800" muted loop playsinline autoplay preload="metadata"></video>
+                    <span class="clip__no">03</span>
+                    <button type="button" class="clip__sound" aria-pressed="false" aria-label="Activar sonido del video 3">♪</button>
+                </figure>
+            </div>
+        </main>
+
+        <!-- News strip -->
+        <footer class="news-footer">
+            <p class="news-strip">
+                <span class="star">★★★</span>
+                <!-- Generado desde contenido/footer.txt. -->
+                <!-- auto:footer -->
+                <a href="https://www.tikzet.com/events/magnetismo-vol">ENTRADAS ACÁ</a>
+                <!-- /auto:footer -->
+                <span class="star">★★★</span>
+            </p>
+        </footer>
+
+    </div>
+
+    <audio id="audio-player" src="../audio/sexo-debil.mp3" preload="none"></audio>
+
+    <script src="../scripts/script.js?v=20260927a"></script>
+    <script>
+        (function () {
+            const buttons = [...document.querySelectorAll('.clip__sound')];
+            buttons.forEach((button, i) => {
+                const video = button.closest('.clip').querySelector('video');
+                button.addEventListener('click', () => {
+                    const turnOn = video.muted;
+                    // One soundtrack at a time.
+                    buttons.forEach((other, j) => {
+                        const otherVideo = other.closest('.clip').querySelector('video');
+                        otherVideo.muted = true;
+                        other.setAttribute('aria-pressed', 'false');
+                        other.setAttribute('aria-label', `Activar sonido del video ${j + 1}`);
+                    });
+                    if (turnOn) {
+                        video.muted = false;
+                        video.currentTime = 0;
+                        video.play().catch(() => {});
+                        button.setAttribute('aria-pressed', 'true');
+                        button.setAttribute('aria-label', `Silenciar video ${i + 1}`);
+                    }
+                });
+            });
+        })();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,98 @@
+/* ===== MCEUI PAGE ===== */
+/* The EP's three clips, shown whole at their own shape, and the download. */
+
+.mceui {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s6);
+  width: 100%;
+  max-width: 1400px;
+  margin-inline: auto;
+  padding: 0 var(--gutter) var(--s8);
+}
+
+.mceui__download {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s3) var(--s4);
+}
+
+.mceui__file {
+  color: var(--sxtp-white);
+  font-size: 0.875rem;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+}
+
+.mceui__clips {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s4);
+  align-items: start;
+}
+
+@media (min-width: 600px) {
+  .mceui__clips { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s6); }
+}
+
+.clip {
+  position: relative;
+  margin: 0;
+  min-width: 0;
+  background: var(--sxtp-black);
+  border: var(--sxtp-border);
+  box-shadow: var(--sxtp-shadow);
+}
+
+.clip video {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Same numbered corner as the gallery's contact sheet. */
+.clip__no {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 3;
+  pointer-events: none;
+  padding: 3px 9px;
+  background: var(--sxtp-black);
+  border-top: 2px solid var(--sxtp-yellow);
+  border-right: 2px solid var(--sxtp-yellow);
+  color: var(--sxtp-yellow);
+  font-size: 0.75rem;
+  font-weight: bold;
+  letter-spacing: 0.14em;
+}
+
+/* Sound toggle, styled like the home page's TV button. */
+.clip__sound {
+  position: absolute;
+  right: var(--s2);
+  bottom: var(--s2);
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  background: var(--sxtp-black);
+  border: 2px solid var(--sxtp-white);
+  color: var(--sxtp-white);
+  font-family: var(--sxtp-font);
+  font-size: 1.125rem;
+  cursor: pointer;
+}
+
+.clip__sound[aria-pressed="true"] {
+  background: var(--sxtp-green);
+  border-color: var(--sxtp-black);
+  color: var(--sxtp-black);
+}
+
+@media (hover: hover) {
+  .clip__sound:hover { background: var(--sxtp-yellow); color: var(--sxtp-black); }
+}
