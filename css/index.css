@@ -686,6 +686,17 @@ canvas:focus-visible,
   border-top: var(--sxtp-rule);
 }
 
+/* Same bar as a show row, so the download reads like the "entradas" links. */
+.ep-download {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s3);
+  padding: 10px var(--s3);
+  background: var(--sxtp-blue);
+  border-top: var(--sxtp-rule);
+  color: var(--sxtp-white);
+}
+
 /* ===== MEDIA COLUMN ===== */
 .tv {
   position: relative;
