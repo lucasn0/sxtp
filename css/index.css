@@ -700,6 +700,44 @@ canvas:focus-visible,
   color: var(--sxtp-white);
 }
 
+.ep-download .show-tickets { flex: none; }
+
+/* The EP title is longer than the bar, so it scrolls past like a ticker.
+   Two copies sit side by side; sliding one copy's width loops seamlessly. */
+.ep-ticker {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ep-ticker__run {
+  display: inline-flex;
+  animation: epTicker 14s linear infinite;
+}
+
+.ep-ticker__run > span::after {
+  content: "★";
+  padding-inline: 0.75em;
+  color: var(--sxtp-yellow);
+}
+
+@media (hover: hover) {
+  .ep-download:hover .ep-ticker__run { animation-play-state: paused; }
+}
+
+@keyframes epTicker {
+  to { transform: translateX(-50%); }
+}
+
+/* No motion: the whole title, wrapped, and no repeat. */
+@media (prefers-reduced-motion: reduce) {
+  .ep-ticker { white-space: normal; }
+  .ep-ticker__run { display: inline; animation: none; }
+  .ep-ticker__run > span[aria-hidden] { display: none; }
+  .ep-ticker__run > span::after { content: none; }
+}
+
 /* ===== MEDIA COLUMN ===== */
 .tv {
   position: relative;
