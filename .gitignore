@@ -4,3 +4,5 @@ structure.jpg
 # WSL/Windows strays that land next to downloaded assets
 *:Zone.Identifier
 *~RF*.TMP
+# Masters originales del EP (pesan demasiado para GitHub); se publica audio/MCEUI.zip
+/audio/mceui/

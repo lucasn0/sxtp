@@ -271,7 +271,6 @@ function buildFooter() {
 const footer = buildFooter();
 updateFile('index.html', { shows: buildShows(), footer });
 updateFile('pages/gallery.html', { ...buildGallery(), footer });
-updateFile('pages/audio.html', { footer });
 
 if (process.env.GITHUB_STEP_SUMMARY && warnings.length) {
     writeFileSync(process.env.GITHUB_STEP_SUMMARY, `## Avisos\n\n${warnings.map(w => `- ${w}`).join('\n')}\n`, { flag: 'a' });

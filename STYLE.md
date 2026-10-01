@@ -10,7 +10,7 @@ This guide describes the existing design and sets an improved direction for futu
 
 **An underground band website assembled like a photocopied gig flyer, an early personal homepage, and a malfunctioning desktop.** Loud, handmade, playful, slightly abrasive, and full of actual band material.
 
-The current visual language comes from `index.html`, `pages/gallery.html`, `pages/audio.html`, their stylesheets, and `scripts/script.js`:
+The current visual language comes from `index.html`, `pages/gallery.html`, their stylesheets, and `scripts/script.js`:
 
 - Electric-blue page backgrounds with magenta, cyan, green, and orange interruptions.
 - Courier typography, lowercase navigation, uppercase announcements, underlines, and hard offset shadows.

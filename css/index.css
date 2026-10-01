@@ -681,7 +681,7 @@ canvas:focus-visible,
 
 .no-signal {
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1 / 1;
   object-fit: cover;
   border-top: var(--sxtp-rule);
 }
