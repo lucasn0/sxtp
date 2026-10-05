@@ -7,5 +7,5 @@
 #            Si lo dejás vacío, el texto se muestra sin link.
 #   - texto: lo que dice el cartel.
 
-link: https://www.tikzet.com/events/magnetismo-vol
+link: https://www.tikzet.com/events/magnetismo-vol-2
 texto: ENTRADAS ACÁ
