@@ -14,5 +14,5 @@
 #   22/11 | Parque Patricios
 
 03/10 | Almagro
-09/10 | Almagro
+09/10 | Almagro | https://www.tikzet.com/events/magnetismo-vol-2
 30/10 | Parque Patricios
