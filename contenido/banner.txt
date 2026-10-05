@@ -15,7 +15,7 @@
 
 arriba: *SXTP* PRESENTA
 titulo: MAGNETISMO.
-texto: UN CICLO DE ARTE. *VOLUMEN 3* ENTRADAS YA DISPONIBLES
+texto: UN CICLO DE ARTE. *VOLÚMEN 2* ENTRADAS YA DISPONIBLES
 boton: entradas ↗
 link: https://www.tikzet.com/events/magnetismo-vol-2
 etiqueta: demos
