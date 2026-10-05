@@ -1,0 +1,21 @@
+# CARTEL GRANDE DE LA HOME
+#
+# Es el cartel de arriba de todo, con el botón amarillo.
+# Cambiá lo que está después de cada "nombre:". No hace falta tocar el HTML.
+#
+#   - arriba:   la línea chica de arriba. Lo que va entre *asteriscos* sale en celeste.
+#   - titulo:   la palabra grande en amarillo.
+#   - texto:    el resto del anuncio. Lo que va entre *asteriscos* sale en rosa.
+#   - boton:    lo que dice el botón amarillo.
+#   - link:     a dónde lleva el botón (tiene que empezar con https://).
+#               Si lo dejás vacío, el botón no aparece.
+#   - etiqueta: el cartelito de arriba a la derecha.
+#
+# Si borrás una línea, queda lo que decía antes por defecto.
+
+arriba: *SXTP* PRESENTA
+titulo: MAGNETISMO.
+texto: UN CICLO DE ARTE. *VOLUMEN 3* ENTRADAS YA DISPONIBLES
+boton: entradas ↗
+link: https://www.tikzet.com/events/magnetismo-vol-2
+etiqueta: demos

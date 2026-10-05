@@ -1,0 +1,14 @@
+# LINKS DE LA HOME
+#
+# Una línea por link:   NOMBRE | LINK
+#
+#   - El orden de las líneas es el orden en la página.
+#   - youtube, instagram, spotify y music llevan su iconito solos.
+#   - La línea "último disco" es a dónde lleva la tapa del último disco.
+#   - Los links tienen que empezar con https://
+
+youtube | https://www.youtube.com/channel/UCquiASEhe2iA_hHehS_t1tw
+instagram | https://www.instagram.com/sxtp.__/
+spotify | https://open.spotify.com/artist/2ZnBuzA5wBghpe3se25S7A?si=CnlUialISmWyrZGLmMGfcg
+music | https://music.apple.com/es/artist/sextape/1596205118
+último disco | https://open.spotify.com/album/6Oibkx9hcil55damCZohBz?si=1zV39xe0T5W0tarwNZlZOA

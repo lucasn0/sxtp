@@ -2,6 +2,8 @@
 //   contenido/shows.txt   -> the "próximos shows" list in index.html
 //   contenido/galeria/*   -> the photo and video grid in pages/gallery.html
 //   contenido/footer.txt  -> the news strip link at the foot of every page
+//   contenido/banner.txt  -> the announcement poster in index.html
+//   contenido/links.txt   -> the links panel and the album link in index.html
 //
 // Runs in the deploy workflow on every push, and locally with
 //   node scripts/build-content.mjs
@@ -18,6 +20,8 @@ const SHOWS_FILE = join(ROOT, 'contenido/shows.txt');
 const GALLERY_DIR = join(ROOT, 'contenido/galeria');
 const CAPTIONS_FILE = join(GALLERY_DIR, 'descripciones.txt');
 const FOOTER_FILE = join(ROOT, 'contenido/footer.txt');
+const BANNER_FILE = join(ROOT, 'contenido/banner.txt');
+const LINKS_FILE = join(ROOT, 'contenido/links.txt');
 
 const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif']);
 const VIDEO_EXTS = new Set(['.mp4', '.webm', '.m4v']);
@@ -275,29 +279,113 @@ function buildGallery() {
 /* ===== FOOTER ===== */
 
 // "clave: valor" lines; the value may itself contain colons (https://...).
-function buildFooter() {
+// Accents on keys are dropped, so "título:" and "titulo:" are the same field.
+function readFields(file, label) {
     const fields = {};
-    if (existsSync(FOOTER_FILE)) {
-        readFileSync(FOOTER_FILE, 'utf8').split(/\r?\n/).forEach((raw, i) => {
-            const text = raw.trim();
-            if (!text || text.startsWith('#')) return;
-            const m = text.match(/^([a-záéíóú]+)\s*:\s*(.*)$/i);
-            if (!m) { warn(`footer.txt línea ${i + 1}: tiene que ser "link: ..." o "texto: ..."`); return; }
-            fields[m[1].toLowerCase()] = m[2].trim();
-        });
+    if (!existsSync(file)) return fields;
+    readFileSync(file, 'utf8').split(/\r?\n/).forEach((raw, i) => {
+        const text = raw.trim();
+        if (!text || text.startsWith('#')) return;
+        const m = text.match(/^([a-záéíóúñ]+)\s*:\s*(.*)$/i);
+        if (!m) { warn(`${label} línea ${i + 1}: tiene que ser "nombre: valor" — la salteo`); return; }
+        fields[m[1].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')] = m[2].trim();
+    });
+    return fields;
+}
+
+// A link the band typed, or '' if it isn't a web address. "www.algo.com/..."
+// without the https:// is common enough to just fix.
+function checkLink(link, label) {
+    if (/^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(link)) link = `https://${link}`;
+    if (link && !/^https?:\/\/\S+$/i.test(link)) {
+        warn(`${label}: "${link}" no es un link (tiene que empezar con https://) — lo salteo`);
+        return '';
     }
+    return link;
+}
+
+// Escapes the text, then turns *this* into a highlighted span. An unpaired
+// asterisk is left as it is.
+function highlight(text, className) {
+    return escapeHtml(text).replace(/\*([^*]+)\*/g, `<span class="${className}">$1</span>`);
+}
+
+function buildFooter() {
+    const fields = readFields(FOOTER_FILE, 'footer.txt');
     const text = escapeHtml(fields.texto || 'ENTRADAS ACÁ');
-    let link = fields.link || '';
-    if (link && !/^https?:\/\//i.test(link)) {
-        warn('footer.txt: el link tiene que empezar con https:// — muestro el texto sin link');
-        link = '';
-    }
+    const link = checkLink(fields.link || '', 'footer.txt');
     const pad = ' '.repeat(16);
     return link ? `${pad}<a href="${escapeHtml(link)}">${text}</a>` : `${pad}<span>${text}</span>`;
 }
 
+/* ===== BANNER ===== */
+
+// Anything left out keeps the poster's usual wording.
+const BANNER_DEFAULTS = {
+    arriba: '*SXTP* PRESENTA',
+    titulo: 'MAGNETISMO.',
+    texto: 'UN CICLO DE ARTE.',
+    boton: 'entradas ↗',
+    link: '',
+    etiqueta: 'demos',
+};
+
+function buildBanner() {
+    const fields = { ...BANNER_DEFAULTS, ...readFields(BANNER_FILE, 'banner.txt') };
+    const link = checkLink(fields.link, 'banner.txt');
+    const pad = ' '.repeat(28);
+    const announce = [
+        `${pad}${highlight(fields.arriba, 'hl-cyan')}`,
+        `${pad}<span class="announce__punch">${escapeHtml(fields.titulo)}</span>`,
+        `${pad}${highlight(fields.texto, 'hl-magenta')}`,
+    ].join('\n');
+    const button = link
+        ? `${' '.repeat(24)}<a class="retro-btn yellow-btn" href="${escapeHtml(link)}">${escapeHtml(fields.boton)}</a>`
+        : `${' '.repeat(24)}<!-- sin link en banner.txt: no hay botón -->`;
+    return {
+        'banner-tag': `${' '.repeat(24)}<span class="poster__kicker">${escapeHtml(fields.etiqueta)}</span>`,
+        banner: announce,
+        'banner-button': button,
+    };
+}
+
+/* ===== LINKS ===== */
+
+const LINK_ICONS = {
+    youtube: 'images/youtube.png',
+    instagram: 'images/instagram.png',
+    spotify: 'images/spotify.png',
+    music: 'images/apple-music.png',
+    'apple music': 'images/apple-music.png',
+};
+const ALBUM_KEY = /^[uú]ltimo disco$/i;
+const ALBUM_DEFAULT = 'https://open.spotify.com/album/6Oibkx9hcil55damCZohBz?si=1zV39xe0T5W0tarwNZlZOA';
+
+function buildLinks() {
+    const rows = [];
+    let album = ALBUM_DEFAULT;
+    for (const { cells, line } of readTable(LINKS_FILE)) {
+        const [name = '', raw = ''] = cells;
+        const link = checkLink(raw, `links.txt línea ${line}`);
+        if (!name || !link) { if (name && !raw) warn(`links.txt línea ${line}: "${name}" no tiene link — lo salteo`); continue; }
+        if (ALBUM_KEY.test(name)) { album = link; continue; }
+        rows.push({ name, link, icon: LINK_ICONS[name.toLowerCase()] });
+    }
+    if (!rows.length) warn('links.txt: no hay ningún link — el panel queda vacío');
+    const pad = ' '.repeat(28);
+    const list = rows.map(({ name, link, icon }) => [
+        `${pad}<a class="link-row" href="${escapeHtml(link)}">`,
+        `${pad}    ${icon ? `<img src="${icon}" alt="">` : ''}${escapeHtml(name)}`,
+        `${pad}</a>`,
+    ].join('\n')).join('\n');
+    return {
+        links: list,
+        'album-link': `${' '.repeat(24)}<a class="album-link" href="${escapeHtml(album)}">`,
+    };
+}
+
 const footer = buildFooter();
-updateFile('index.html', { shows: buildShows(), footer });
+updateFile('index.html', { shows: buildShows(), ...buildBanner(), ...buildLinks(), footer });
 updateFile('pages/gallery.html', { ...buildGallery(), footer });
 updateFile('pages/mceui.html', { footer });
 

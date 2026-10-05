@@ -15,9 +15,11 @@ permissions:
   pages: write
   id-token: write
 
+# Back-to-back pushes queue up instead of cancelling each other: a cancelled
+# run can leave the next deploy without its upload, and the site stays stale.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:

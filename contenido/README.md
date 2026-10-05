@@ -8,6 +8,18 @@
 
 Se ordenan por fecha. Los que pasaron se ocultan solos.
 
+## Cartel de la home — [`banner.txt`](banner.txt)
+
+1. Lápiz ✏️.
+2. Cambiá `arriba:`, `titulo:`, `texto:`, `boton:` o `link:`. Lo que va entre `*asteriscos*` se resalta.
+3. **Commit changes**.
+
+## Links — [`links.txt`](links.txt)
+
+1. Lápiz ✏️.
+2. Una línea por link: `instagram | https://...`. La línea `último disco` es el link de la tapa.
+3. **Commit changes**.
+
 ## Footer — [`footer.txt`](footer.txt)
 
 1. Lápiz ✏️.
@@ -29,3 +41,5 @@ Descripciones y flyers (opcional): [`galeria/descripciones.txt`](galeria/descrip
 ---
 
 Tarda 1–2 minutos. ✅ publicado · 🟡 publicando · ❌ falló
+
+No hace falta tocar `index.html`: lo que está entre `<!-- auto:... -->` se rearma solo desde estos archivos en cada publicación, así que si lo editás ahí, se pisa.
