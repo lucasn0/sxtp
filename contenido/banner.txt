@@ -10,6 +10,7 @@
 #   - link:     a dónde lleva el botón (tiene que empezar con https://).
 #               Si lo dejás vacío, el botón no aparece.
 #   - etiqueta: el cartelito de arriba a la derecha.
+#               Si lo dejás vacío, el cartelito no aparece.
 #
 # Si borrás una línea, queda lo que decía antes por defecto.
 
@@ -18,4 +19,4 @@ titulo: MAGNETISMO.
 texto: UN CICLO DE ARTE. *VOLÚMEN 2* ENTRADAS YA DISPONIBLES
 boton: entradas ↗
 link: https://www.tikzet.com/events/magnetismo-vol-2
-etiqueta: demos
+etiqueta:

@@ -327,7 +327,7 @@ const BANNER_DEFAULTS = {
     texto: 'UN CICLO DE ARTE.',
     boton: 'entradas ↗',
     link: '',
-    etiqueta: 'demos',
+    etiqueta: '',
 };
 
 function buildBanner() {
@@ -343,7 +343,9 @@ function buildBanner() {
         ? `${' '.repeat(24)}<a class="retro-btn yellow-btn" href="${escapeHtml(link)}">${escapeHtml(fields.boton)}</a>`
         : `${' '.repeat(24)}<!-- sin link en banner.txt: no hay botón -->`;
     return {
-        'banner-tag': `${' '.repeat(24)}<span class="poster__kicker">${escapeHtml(fields.etiqueta)}</span>`,
+        'banner-tag': fields.etiqueta
+            ? `${' '.repeat(24)}<span class="poster__kicker">${escapeHtml(fields.etiqueta)}</span>`
+            : `${' '.repeat(24)}<!-- sin etiqueta en banner.txt: no hay cartelito -->`,
         banner: announce,
         'banner-button': button,
     };
