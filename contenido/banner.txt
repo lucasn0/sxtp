@@ -14,9 +14,9 @@
 #
 # Si borrás una línea, queda lo que decía antes por defecto.
 
-arriba: *SXTP* PRESENTA
-titulo: MAGNETISMO.
-texto: UN CICLO DE ARTE. *VOLÚMEN 2* ENTRADAS YA DISPONIBLES
-boton: entradas ↗
-link: https://www.tikzet.com/events/magnetismo-vol-2
+arriba: *NUEVO* *NUEVO* *NUEVO*
+titulo: se siente rara la resignación con veinte años.
+texto: EP con canciones inéditas.
+boton: ya disponible ↗
+link: https://soundcloud.com/sextapebanda/sets/se-siente-rara-la-resignacion
 etiqueta:
