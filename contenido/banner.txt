@@ -14,8 +14,8 @@
 #
 # Si borrás una línea, queda lo que decía antes por defecto.
 
-arriba: *NUEVO* *NUEVO* *NUEVO*
-titulo: se siente rara la resignación con veinte años.
+arriba: *sxtp presenta*
+titulo: "se siente rara la resignación con veinte años"
 texto: EP con canciones inéditas.
 boton: ya disponible ↗
 link: https://soundcloud.com/sextapebanda/sets/se-siente-rara-la-resignacion
