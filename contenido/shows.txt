@@ -13,6 +13,5 @@
 #   15/11 | El Portal, Almagro | https://www.tikzet.com/events/lo-que-sea
 #   22/11 | Parque Patricios
 
-03/10 | Almagro
-09/10 | Almagro | https://www.tikzet.com/events/magnetismo-vol-2
+22/10 | Club Magnetismo | https://docs.google.com/forms/d/e/1FAIpQLSfl8afu1RyK8irkbCNJjlbDxFrGsnnyrh5cgo8HeH44gWAUHw/viewform
 30/10 | Parque Patricios | https://alpogo.com/evento/warning-29409
