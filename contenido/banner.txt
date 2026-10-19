@@ -15,8 +15,8 @@
 # Si borrás una línea, queda lo que decía antes por defecto.
 
 arriba: *sxtp presenta*
-titulo: "se siente rara la resignación con veinte años"
-texto: EP con canciones inéditas.
-boton: ya disponible ↗
-link: https://soundcloud.com/sextapebanda/sets/se-siente-rara-la-resignacion
+titulo: CLUB MAGNETISMO
+texto: encuentro artístico. por todos, de todos y para todos
+boton: reservá tu entrada gratis acá
+link: https://docs.google.com/forms/d/e/1FAIpQLSfl8afu1RyK8irkbCNJjlbDxFrGsnnyrh5cgo8HeH44gWAUHw/viewform
 etiqueta:
