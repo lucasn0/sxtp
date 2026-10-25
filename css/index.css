@@ -1277,3 +1277,233 @@ canvas:focus-visible,
   .panel--links { grid-area: links; }
   .panel--album { grid-area: album; }
 }
+
+/* ===== RABBIT HOLE =====
+   Drawing 1 sits in the photo grid; scripts/rabbit-hole.js builds the
+   .hole overlay on top. --grow (0 → 1, set on <html>) is how deep you are:
+   the page shrinks and dims behind, the frame widens, the pile thickens. */
+.hole-entry { --accent: var(--sxtp-pink); }
+
+/* The clickable part of a drawing. Positioned by its centre so a thin line
+   of text still gets a 44px target on a phone. */
+.hole-spot {
+  position: absolute;
+  z-index: 2;
+  left: calc(var(--x) + var(--w) / 2);
+  top: calc(var(--y) + var(--h) / 2);
+  width: max(44px, var(--w));
+  height: max(44px, var(--h));
+  translate: -50% -50%;
+  background: transparent;
+  border: 2px dashed transparent;
+  cursor: zoom-in;
+}
+
+@media (hover: hover) {
+  .hole-spot:hover {
+    border-color: var(--accent, var(--sxtp-cyan));
+    background: rgba(255, 255, 255, 0.06);
+  }
+}
+
+.hole-spot:focus-visible { border-color: var(--accent, var(--sxtp-cyan)); }
+
+/* After a while without finding it, the spot gives itself away. */
+.hole-spot.is-hinting {
+  border-color: var(--accent, var(--sxtp-cyan));
+  animation: holeHint 1.6s ease-in-out 3;
+}
+
+@keyframes holeHint {
+  50% { box-shadow: 0 0 0 6px var(--accent, var(--sxtp-cyan)); background: rgba(255, 255, 255, 0.12); }
+}
+
+/* The page being swallowed. Only the content column moves; nav and ticker stay. */
+html.hole-open { overflow: hidden; }
+
+.content-grid {
+  transition: transform 0.6s cubic-bezier(0.3, 0.7, 0.2, 1), filter 0.6s;
+  transform-origin: 50% 20vh;
+}
+
+html.hole-open .content-grid {
+  transform: scale(calc(1 - var(--grow, 0) * 0.14)) rotate(calc(var(--grow, 0) * -3deg));
+  filter: saturate(calc(1 + var(--grow, 0))) blur(calc(var(--grow, 0) * 3px));
+}
+
+.hole {
+  --accent: var(--sxtp-pink);
+  --hud: 64px;
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: grid;
+  place-items: center;
+  padding: calc(var(--hud) + var(--s2)) var(--s3) calc(var(--s8) + env(safe-area-inset-bottom));
+  overflow: hidden;
+  /* Starts as a dark tint over the page and ends as the whole screen. */
+  background:
+    var(--halftone) 0 0 / 6px 6px,
+    rgba(2, 0, 30, calc(0.45 + var(--grow, 0) * 0.55));
+  background-blend-mode: normal;
+  transition: background-color 0.6s;
+}
+
+.hole[hidden] { display: none; }
+
+/* Drawings you've left behind, pinned up around the hole. */
+.hole__debris {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hole__scrap {
+  position: absolute;
+  width: clamp(130px, 28vw, 380px);
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border: var(--sxtp-border);
+  box-shadow: 6px 6px 0 var(--accent);
+  transform: translate(-50%, -50%) rotate(var(--tilt, 0deg));
+  /* Older scraps sink into the dark as the hole deepens. */
+  filter: contrast(1.1) brightness(calc(1 - var(--grow, 0) * 0.35));
+}
+
+.hole__hud {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s2) var(--s4);
+  min-height: var(--hud);
+  padding: var(--s2) var(--gutter);
+  background: var(--sxtp-black);
+  border-bottom: 3px solid var(--accent);
+}
+
+.hole__depth {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+  color: var(--sxtp-white);
+  font-weight: bold;
+}
+
+.hole__depth-label {
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.hole__depth-value {
+  color: var(--accent);
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-style: italic;
+  line-height: 1;
+  text-shadow: 3px 3px 0 var(--sxtp-blue);
+}
+
+/* One tick per drawing; the ones you've passed light up. */
+.hole__ticks {
+  display: flex;
+  list-style: none;
+  gap: 3px;
+  margin-right: auto;
+}
+
+.hole__ticks li {
+  width: 10px;
+  height: 18px;
+  border: 1px solid var(--sxtp-white);
+}
+
+.hole__ticks li.is-past { background: var(--accent); }
+
+.hole__exit {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--s3);
+  background: var(--sxtp-yellow);
+  border: var(--sxtp-rule);
+  box-shadow: 3px 3px 0 var(--sxtp-white);
+  color: var(--sxtp-black);
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.hole__exit:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--sxtp-white); }
+
+/* The current drawing. Grows with depth until it's all you see. */
+.hole__frame {
+  position: relative;
+  z-index: 2;
+  width: min(
+    calc(min(100vw, 1500px) * (0.5 + var(--grow, 0) * 0.5)),
+    calc(100vw - var(--s3) * 2),
+    calc((100dvh - var(--hud) - var(--s8) * 2) * 4 / 3)
+  );
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--sxtp-black);
+  border: var(--sxtp-border);
+  box-shadow:
+    8px 8px 0 var(--accent),
+    -4px -4px 0 var(--sxtp-blue);
+  transition: width 0.5s cubic-bezier(0.3, 0.7, 0.2, 1), box-shadow 0.3s;
+}
+
+.hole__frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  will-change: transform;
+}
+
+/* Mid-dive the frame loses its register for a moment. */
+.hole__frame.is-diving {
+  box-shadow:
+    -10px 0 0 var(--sxtp-cyan),
+    10px 0 0 var(--sxtp-magenta);
+}
+
+.hole__frame.is-diving .hole-spot { visibility: hidden; }
+
+.hole__count {
+  position: absolute;
+  z-index: 3;
+  left: var(--gutter);
+  bottom: calc(var(--s2) + env(safe-area-inset-bottom));
+  padding: 2px var(--s2);
+  background: var(--sxtp-black);
+  color: var(--accent);
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+}
+
+/* Bottom of the hole: the last drawing stops being a picture in a frame and
+   becomes the room — full bleed, on its own blue, the pile gone dark. */
+.hole[data-last="true"] {
+  padding: var(--hud) 0 0;
+  background: #0c2fe4;
+}
+
+.hole[data-last="true"] .hole__frame {
+  width: min(100vw, calc((100dvh - var(--hud)) * 4 / 3));
+  border: 0;
+  box-shadow: none;
+}
+
+.hole[data-last="true"] .hole__scrap { opacity: 0.18; }
+
+@media (prefers-reduced-motion: reduce) {
+  .content-grid,
+  .hole,
+  .hole__frame { transition: none; }
+
+  html.hole-open .content-grid { transform: none; filter: none; }
+  .hole-spot.is-hinting { animation: none; }
+}
