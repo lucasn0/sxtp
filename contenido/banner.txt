@@ -16,7 +16,7 @@
 
 arriba: *sxtp presenta*
 titulo: "se siente rara la resignación con veinte años"
-texto: ep nuevo. cosas nuevas. únicas y espontáneas.
+texto: ep de inéditos. cosas nuevas. únicas y espontáneas. solo disponible en bandcamp.
 boton: escuchalo acá
 link: https://sextapemusica.bandcamp.com/album/se-siente-rara-la-resignacion-con-veinte-a-os
 etiqueta:
