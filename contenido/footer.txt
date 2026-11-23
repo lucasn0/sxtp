@@ -7,5 +7,5 @@
 #            Si lo dejás vacío, el texto se muestra sin link.
 #   - texto: lo que dice el cartel.
 
-link: https://docs.google.com/forms/d/e/1FAIpQLSfl8afu1RyK8irkbCNJjlbDxFrGsnnyrh5cgo8HeH44gWAUHw/viewform
-texto: CLUB MAGNETÍSMO. ÉSTE JUEVES. ENTRADAS ACÁ
+link: https://www.tikzet.com/events/magnetismo-set-360
+texto: SXTP 360 en SALAS EQUIS. ÚLTIMO MAGENTISMO del AÑO 
