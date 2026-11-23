@@ -15,7 +15,7 @@
 # Si borrás una línea, queda lo que decía antes por defecto.
 
 arriba: *sxtp presenta*
-titulo: "SXTP 360 en SALAS EQUIS con CÁLAMO (mdq)"
+titulo: "MAGNETISMO 360 en SALAS EQUIS con CÁLAMO (mdq)"
 texto: último magnetismo del año. último golpe. todos juntos.
 boton: conseguí tu entrada acá
 link: https://www.tikzet.com/events/magnetismo-set-360
