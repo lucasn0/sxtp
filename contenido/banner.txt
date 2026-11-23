@@ -15,8 +15,7 @@
 # Si borrás una línea, queda lo que decía antes por defecto.
 
 arriba: *sxtp presenta*
-titulo: "se siente rara la resignación con veinte años"
-texto: ep de inéditos. cosas nuevas. únicas y espontáneas. solo disponible en bandcamp.
-boton: escuchalo acá
-link: https://sextapemusica.bandcamp.com/album/se-siente-rara-la-resignacion-con-veinte-a-os
-etiqueta:
+titulo: "SXTP 360 en SALAS EQUIS con CÁLAMO (mdq)"
+texto: último magnetismo del año. último golpe. todos juntos.
+boton: conseguí tu entrada acá
+link: https://www.tikzet.com/events/magnetismo-set-360
